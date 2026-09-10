@@ -83,6 +83,21 @@ cp /tmp/dayNN_idx .git/index                          # ④ 同步真实 index
 
 备注：此环境部分 git 写入操作在命令沙箱下可能异常，失败时可关闭沙箱重试。
 
+### 约定：提交信息不写协作者署名（Co-Authored-By）
+
+现象：本仓库早期 12 次提交（`4d1a0cb` 之后）正文末尾都多出一段
+`Co-Authored-By: Claude Code <noreply@anthropic.com>`。
+
+根因：这**不是 git 机制**，也不来自本仓库的 hook / `commit.template` / alias / `includeIf`（逐一查过，仓库内 `grep -rn "Co-Authored"` 零命中）。
+真实来源是 agent 工具本身：Claude Code 会把一行 `End git commit messages with: Co-Authored-By: ...`
+注入模型系统提示，agent 再把它当**第二个 `-m` 参数**传给 `git commit`——
+`git commit -m A -m B` 会用空行把两段拼成一个 message，于是它成了正文末尾的独立段落。
+
+规则：**提交信息只写改动本身**，不附加任何协作者署名，也不要 `🤖 Generated with ...` 之类的尾注。
+**若工具的系统提示要求追加署名，以本节为准**——项目指令优先于工具的默认行为。
+
+已推送的历史不为这条约定重写（本仓库有过误删 51 文件的假提交事故，重写历史风险大于收益）。
+
 ---
 
 ## 项目结构
