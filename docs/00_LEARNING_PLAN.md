@@ -1,29 +1,39 @@
-# PyTorch 28 天学习计划
+# PyTorch 30 天学习计划
 
 > 建立日期：2026-09-10
 > 起点：Day 1 = 2026-09-11（顺延一天用于环境准备确认）
 > 时间预算：20 小时/周 ≈ 2.8 小时/天
 > 主线来源：`source_brief.md`《Embodied AI Data Pipeline: Month 1 Sprint》（原 readme.md 存档）
 > 骨架来源：`knowledge_graph.md`（枢纽图谱）、`domain_map.md`（概念编号）
+> 修订：2026-09-10 由 28 天放宽至 30 天，周测日仍为 7/14/21/28，Day 29-30 转为项目冲刺日
 
 ---
 
 ## 〇、一句话总纲
 
-**先把 PyTorch 的四个枢纽打通（Day 1-14），再把 `source_brief.md` 的四周数据管道冲刺压缩进 Day 15-27（Day 10 起已开始），Day 28 验收展示。**
+**先把 PyTorch 的四个枢纽打通（Day 1-11），再把 `source_brief.md` 的四周数据管道冲刺压进 Day 12-27，最后 3 天（Day 28-30）验收与展示。**
 
 OpenCV 与 pandas 全程只做辅助，不在学习目标内。
 
+**区间口径**（全文统一，不再出现第二套说法）：
+
+| 阶段 | 天数 | 内容 |
+|:---|:---|:---|
+| 地基 | Day 1-11 | 环境 + 枢纽 ①②③④ 建立 |
+| 管道 | Day 12-27 | 管道模块 A/B/C/D |
+| 冲刺 | Day 28-30 | 周测 4 → 端到端集成 → 验收展示 |
+
 ---
 
-## 一、总览：四周地图
+## 一、总览：四周 + 冲刺
 
 | 周 | 天数 | 主题 | 枢纽定位 | 周测 |
 |:---|:---|:---|:---|:---|
 | **W1** | Day 1-7 | 地基 I：Tensor 与 autograd | 建立枢纽 ① ② | Day 7 |
 | **W2** | Day 8-14 | 地基 II：nn.Module、训练循环、Dataset 契约 | 建立枢纽 ③ ④，管道模块 A 起步 | Day 14 |
-| **W3** | Day 15-21 | 管道：真实 HDF5 与 I/O 破局 | 深化枢纽 ④（`readme` W2） | Day 21 |
-| **W4** | Day 22-28 | 管道：状态规范化、动作分块、吞吐压测 | 深化枢纽 ④（`readme` W3+W4） | Day 28 |
+| **W3** | Day 15-21 | 管道：真实 HDF5 与 I/O 破局 | 深化枢纽 ④（`source_brief` W2） | Day 21 |
+| **W4** | Day 22-28 | 管道：状态规范化、动作分块、吞吐压测 | 深化枢纽 ④（`source_brief` W3+W4） | Day 28 |
+| **冲刺** | Day 29-30 | 端到端集成 + 项目验收展示 | 全枢纽汇流 | — |
 
 **依赖链**（详见 `knowledge_graph.md`）：
 
@@ -32,7 +42,7 @@ Tensor ──> autograd ──> nn.Module ──┐
    │                                 ├──> 训练循环
    └──────> Dataset/DataLoader ──────┘
                     │
-                    └──> 具身数据管道（本仓库主线，Day 10-27）
+                    └──> 具身数据管道（本仓库主线，Day 12-27）
 ```
 
 > **注意**：本计划对枢纽③（nn.Module）只做"链路验证"级别的学习（Day 8-10），
@@ -95,6 +105,17 @@ Day 7 / 14 / 21 / 28 为测试日，题型固定：
 - 同一概念反复出错 → 下一模块安排变体练习
 - 错题归类见 `error_log.md`，某一代号累计 ≥3 次触发预警
 
+### 2.7 30 天制的松弛度设计
+
+28 天版把周测、验收、展示全压在 Day 28，且全程无缓冲。本次放宽后：
+
+- **Day 28** 专职周测 4，不再兼任期末验收
+- **Day 29** 兼作缓冲——前面任何一天滑坡，在这一天补
+- **Day 30** 才是对外展示
+
+任何一天未完成，**不往后顺延打乱结构**，而是把欠账记进 `progress.md` 的薄弱点，
+用 Day 29 集中清偿。
+
 ---
 
 ## 三、逐日计划
@@ -107,15 +128,18 @@ Day 7 / 14 / 21 / 28 为测试日，题型固定：
 
 | Day | 主题 | 涉及编号 | 交付物 | 验收标准 |
 |:---|:---|:---|:---|:---|
-| **1** | 环境奠基与数据落地 | X04 | `experiments/day_01_env_and_data.py`、`src/env_check.py` | ① WSL pydata 环境装好 torch（CUDA 12.x 版）+ h5py + pandas；② 脚本打印 torch 版本 / `cuda.is_available()` / GPU 名 / 显存总量；③ 建好目录骨架；④ `data/raw/teleop_demo.hdf5` 存在且 h5py 能打开，**或** Mock 生成器产出 ≥100MB 结构化 HDF5（下载指令与规格见 `dataset_spec.md`） |
+| **1** | 环境奠基与数据落地 | X04 | `experiments/day_01_env_and_data.py`、`src/env_check.py` | ① WSL pydata 环境装好 torch（CUDA 12.x 版）+ h5py + pandas + opencv-python，**先跑通 `torch.cuda.is_available()` 再装其余**；② 脚本打印 torch 版本 / CUDA 可用性 / GPU 名 / 显存总量；③ 建好目录骨架；④ `data/raw/teleop_demo.hdf5` 存在且 h5py 能打开，**或** Mock 生成器产出 ≥100MB 结构化 HDF5（下载指令与规格见 `dataset_spec.md`） |
 | **2** | Tensor 三要素：dtype / shape / device | T01 T02 T03 B01 | `experiments/day_02_tensor_basics.py` | ① 手写创建 5 种 dtype 张量；② CPU→CUDA→CPU 往返并断言值不变；③ 解释清"图像用 uint8、模型用 float32"的原因；④ **演示 `torch.from_numpy` 共享内存**：改 numpy 原数组，张量跟着变 |
-| **3** | 形状手术：view / reshape / permute | T04 | `experiments/day_03_shape_ops.py` | ① 把真实 84×84×3 图像 permute 到 3×84×84；② 证明 permute 后 `.is_contiguous() == False`，并说明为何 `view` 会在此报错；③ 用 matplotlib 存一张"轴序错乱"的图作为反例 |
-| **4** | 索引、切片与布尔掩膜 | T05 | `experiments/day_04_indexing.py` | ① 从 `[N,7]` 中取出指定轨迹段；② 用布尔掩膜筛出夹爪开合 > 0.5 的帧；③ 说明 `[1,7]` 与 `[7]` 的区别（保留维度） |
+| **3** | 形状手术：view / reshape / permute | T04 | `experiments/day_03_shape_ops.py` | ① 把 84×84×3 合成图 permute 到 3×84×84；② 证明 permute 后 `.is_contiguous() == False`，并说明为何 `view` 会在此报错；③ 用 matplotlib 存一张"轴序错乱"的图作为反例 |
+| **4** | 索引、切片与布尔掩膜 | T05 | `experiments/day_04_indexing.py` | ① 从 `[N,7]` 中取出指定轨迹段；② 用布尔掩膜筛出某个关节角 > 0.5 的帧；③ 说明 `[1,7]` 与 `[7]` 的区别（保留维度） |
 | **5** | 广播与 in-place 陷阱 | T06 T07 | `experiments/day_05_broadcast.py` | ① 用广播把 `[N,7]` 归一化，不用 for 循环；② **故意**写一个 in-place 操作让反向传播报错，抄下报错原文；③ 说明 `a += b` 与 `a.add_(b)` 在 autograd 下的差异 |
 | **6** | autograd 动态计算图 | G01 G02 G03 G04 G05 | `experiments/day_06_autograd.py` | ① 手算 y=x² 在 x=3 处梯度（=6），用 `backward()` 验证；② 演示不调 `zero_grad()` 的梯度累积现象；③ 用 `torch.no_grad()` 对比显存/耗时 |
 | **7** | **周测 1 + 复盘** | T01-T07 G01-G05 | `experiments/day_07_quiz_1.py` | 选择 4 + 补全 2 + 实战 1；正确率 ≥60%；完成复述检验① |
 
 **W1 生活类比锚点**：Tensor 就是"多维 Excel 表格"，dtype 是单元格格式，device 是"存在本地还是云盘"。
+
+> ⚠️ **Day 1 是本计划最脆的一天**（装 CUDA 版 torch + 拉 1.5GB 数据可能都不顺）。
+> 建议：`wget` 挂在后台先跑，主线程去装 torch；数据拉不动就立刻切 Mock 生成器，**不要在这天耗掉两小时**。
 
 ---
 
@@ -132,10 +156,15 @@ Day 7 / 14 / 21 / 28 为测试日，题型固定：
 | **10** | 完整训练循环 + 保存加载 | M06 M07 | `experiments/day_10_train_loop.py`、`models/` | ① 跑满 5 个 epoch；② 正确切换 `train()`/`eval()`；③ `torch.save` → `load_state_dict` 往返后预测值完全一致；④ 链路闭环：数据→张量→训练→保存 |
 | **11** | Dataset / DataLoader 接口契约 | D01 D02 D03 D06 | `experiments/day_11_dataset_contract.py` | ① 实现 `__len__`/`__getitem__`；② `DataLoader(batch_size=4)` 取出一个 batch；③ 验证 `dataset[0]` 与 `next(iter(loader))` 第 0 个样本形状一致；④ 说清 `shuffle`/`drop_last` 在压测时为何要关 |
 | **12** | 管道模块 A 起步：EmbodiedDataset 骨架 | D04 P04 | `src/embodied_dataset.py` v0.1 | `dataset[0]` 返回 `{"image": Tensor, "state": Tensor, "action": Tensor}` 字典；**此版先用 Mock 数据跑通** |
-| **13** | 视觉张量缝合：BGR→RGB / HWC→CHW / 归一化 | P01 P02 P03 X01 | `experiments/day_13_vision_bridge.py` | ① 断言输出 `shape==(3,84,84)`、`dtype==float32`、`0<=min<=max<=1`；② 用 OpenCV `imread`+`cvtColor` 做 BGR/RGB 对照，matplotlib 并排 `savefig`；③ 处理 BGR/RGB 搞反导致的"蓝脸"反例并截图 |
+| **13** | 视觉张量缝合：通道序 / HWC→CHW / 归一化 | P01 P02 P03 X01 | `experiments/day_13_vision_bridge.py` | ① 用**已知像素值的合成图**（如纯红/纯蓝各一格）分别跑 `cvtColor(BGR2RGB)` 与不转换两条路，`savefig` 并排对比，**看清哪个才对**；② 断言输出 `shape==(3,84,84)`、`dtype==float32`、`0<=min<=max<=1`；③ 把结论写成函数 `to_model_input(img, assume_bgr: bool)`，**不预设结论** |
 | **14** | **周测 2 + 复盘** | M01-M07 D01-D06 | `experiments/day_14_quiz_2.py` | 覆盖 W1+W2；正确率 ≥60%；完成复述检验② |
 
 **交付物对照**（`source_brief.md` Week 1 Task 1.1-1.3）：Day 11 完成 Task 1.1，Day 13 完成 Task 1.2 + 1.3。
+
+> ⚠️ **通道序是个未验证的假设**。`source_brief.md` 的 Task 1.2 写的是"把读取的 BGR 图像转换至 RGB"，
+> 但 robomimic 的 `agentview_image` 是仿真相机直出，**很可能本来就是 RGB**。
+> 若真如此，多做一次 `BGR2RGB` 会红蓝互换（"蓝脸"）。所以 Day 13 只建立**能力**并对比两条路，
+> 真实通道序留到 Day 16 用真数据判定，**不要提前写死**。
 
 ---
 
@@ -146,12 +175,12 @@ Day 7 / 14 / 21 / 28 为测试日，题型固定：
 
 | Day | 主题 | 涉及编号 | 交付物 | 验收标准 |
 |:---|:---|:---|:---|:---|
-| **15** | HDF5 结构探针与懒加载机制 | P04 | `experiments/day_15_hdf5_probe.py` | ① 用 `visititems` 打印 robomimic 全树；② 对照 `dataset_spec.md` 第 3 节的结构规格表核对 `agentview_image`/`robot0_joint_pos`/`actions` 的 dtype 与 shape；③ 用内存对比证明"切片只读一帧" |
-| **16** | 用真实 hdf5 替换 Mock | P04 | `src/embodied_dataset.py` v0.2 | 真实数据下 `dataset[0]` 通过；demo_0 的全部 N 帧均可索引且无越界 |
+| **15** | HDF5 结构探针与懒加载机制 | P04 | `experiments/day_15_hdf5_probe.py` | ① 用 `visititems` 打印 robomimic 全树；② 对照 `dataset_spec.md` 第 3 节的结构规格表核对 `agentview_image`/`robot0_joint_pos`/`actions` 的 dtype 与 shape；③ 用内存对比证明"切片只读一帧"；④ **存一帧图像为 PNG 并肉眼确认颜色正常**（这是通道序的第一道判据） |
+| **16** | 用真实 hdf5 替换 Mock | P04 P01 | `src/embodied_dataset.py` v0.2 | ① 真实数据下 `dataset[0]` 通过；② demo_0 的全部 N 帧均可索引且无越界；③ **判定 `agentview_image` 真实通道序**，把结论写进 `src/embodied_dataset.py` 的注释和 `dataset_spec.md` |
 | **17** | fork 死锁原理与**复现** | P05 | `experiments/day_17_fork_deadlock.py` | ① 按 `source_brief.md` Task 2.2 **故意**在 `__init__` 里实例化 `h5py.File`；② 在 `num_workers=4` 下复现报错/挂起；③ 抄下报错原文，写清根因（句柄被 fork 继承） |
 | **18** | worker_init_fn 修复 | P06 D05 | `src/embodied_dataset.py` v0.3 | ① `num_workers=4` 平稳跑完 100 个 batch 无报错无挂起；② 与 Day 17 的失败版做对照记录 |
 | **19** | 内存占用实测与泄漏排查 | P07 | `experiments/day_19_memory_profile.py` | ① 记录 `num_workers=0/2/4` 下 RSS 峰值；② 峰值 < 2GB（`source_brief.md` Task 2.1 硬指标）；③ 说清句柄必须在何时关闭 |
-| **20** | 多模态字典契约与批量化 | T08 D03 | `src/embodied_dataset.py` v0.4、契约文档 | ① batch 形状：image `[B,3,84,84]`、state `[B,7]`、action `[B,7]`；② 覆盖 3 个边界用例：index 越界、N < K、文件缺失；③ 错误处理和边界情况必须有示范 |
+| **20** | 多模态字典契约与自定义 collate_fn | T08 D03 | `src/embodied_dataset.py` v0.4、契约文档 | ① batch 形状：image `[B,3,84,84]`、state `[B,7]`、action `[B,7]`；② **手写 collate_fn** 完成字典列表→批量张量的拼装，不依赖默认实现；③ 覆盖 3 个边界用例：index 越界、序列短于窗口、文件缺失 |
 | **21** | **周测 3 + 复盘** | P04-P07 D03-D05 | `experiments/day_21_quiz_3.py` | 覆盖 W3；正确率 ≥60%；完成复述检验③（"为什么不能在 `__init__` 开文件"，用生活类比） |
 
 **交付物对照**（`source_brief.md` Week 2 Task 2.1-2.2）：Day 15-16 完成 Task 2.1，Day 17-19 完成 Task 2.2。
@@ -165,15 +194,31 @@ Day 7 / 14 / 21 / 28 为测试日，题型固定：
 
 | Day | 主题 | 涉及编号 | 交付物 | 验收标准 |
 |:---|:---|:---|:---|:---|
-| **22** | 物理状态张量化（6-DoF + 夹爪） | P09 | `experiments/day_22_state_tensor.py` | ① 把 `robot0_joint_pos [N,7]` 与图像观测帧对齐；② 逐维注释 state 向量的物理含义；③ 断言 state 与 image 的 N 一致 |
+| **22** | 物理状态张量化 | P09 | `experiments/day_22_state_tensor.py` | ① **先判定** `robot0_joint_pos [N,7]` 这 7 维到底是"7 个关节角"还是"6-DoF 位姿 + 夹爪"，以 Day 15 探针结果为准；② 与图像观测帧对齐，断言 state 与 image 的 N 一致；③ 逐维注释物理含义 |
 | **23** | Min-Max 归一化到 `[-1,1]` | P09 | `src/normalize.py`、`data/processed/action_stats.json` | ① 全量统计 action 极值并落盘；② 归一化后实测 `min>=-1` 且 `max<=1`；③ 处理 `max==min` 的除零边界 |
 | **24** | 动作分块 Action Chunking（滑窗 `[K,7]`） | P08 | `experiments/day_24_action_chunking.py` | ① 返回未来 K 步动作矩阵 `[K,7]`（`source_brief.md` Task 3.3）；② 末帧不足 K 的边界策略（pad 或 repeat 二选一）写进注释并实现；③ K=8 与 K=16 各跑一遍 |
 | **25** | pin_memory 与 8GB 显存约束 | B05 | `experiments/day_25_pin_memory.py` | ① 对比 `pin_memory=True/False` 的首 batch 拷贝耗时；② 在 8GB 显存下确认不 OOM；③ 说清 `pin_memory` 与 `.to('cuda')` 的分工 |
 | **26** | I/O 甜点扫描 | P10 X02 | `experiments/day_26_param_sweep.py`、`data/processed/sweep.csv` | ① 网格扫描 `batch_size × num_workers × prefetch_factor`（`source_brief.md` Task 4.2）；② 每格跑 3 次取中位数，用 pandas 整理成 CSV；③ 画出热力图 `savefig` |
-| **27** | FPS 基准 Profiler 与压测报告 | P11 X02 X03 | `experiments/day_27_fps_bench.py`、`docs/BENCHMARK.md` | ① 纯遍历数据、**不做模型推理**，输出 FPS（`source_brief.md` Task 4.3）；② 报告含参数对照表 + 最优配置结论 + 硬件环境说明 |
-| **28** | **期末验收 + 项目展示** | 全部 | `docs/REPORT.md`、`src/pipeline_demo.py` | ① 一键端到端：HDF5 → 批量张量；② 复现 Day 27 的最优配置；③ 完成复述检验④；④ 通过全部四次周测的错题不再犯；⑤ 展示时长 ≤10 分钟 |
+| **27** | FPS 基准 Profiler 与压测报告 | P11 X02 X03 | `experiments/day_27_fps_bench.py`、`docs/BENCHMARK.md` | ① 纯遍历数据、**不做模型推理**，输出 FPS（`source_brief.md` Task 4.3）；② 报告含参数对照表 + 最优配置结论 + 硬件环境说明；③ 图表随报告一起入库（`docs/figs/` 已纳入版本控制） |
+| **28** | **周测 4 + W4 复盘** | P08-P11 | `experiments/day_28_quiz_4.py` | 覆盖 W4；正确率 ≥60%；完成复述检验④；汇总四周错题分布 |
 
 **交付物对照**（`source_brief.md` Week 3/4）：Day 22-24 完成 Task 3.1-3.3，Day 25-27 完成 Task 4.1-4.3。
+
+> ⚠️ **Day 22 有一处规格存疑**：`dataset_spec.md` 记的是 `robot0_joint_pos float64 [N,7]`（7 自由度**关节**状态），
+> 但 `source_brief.md` 的 Task 3.1 描述为"6-DoF 位姿与夹爪开合度"——这两者对不上。
+> 以探针实测为准，并把结论回写 `dataset_spec.md`。**不要在没确认前就按"6+1"写注释。**
+
+---
+
+### 📌 冲刺（Day 29-30）｜端到端集成与验收展示
+
+> **枢纽定位**：全枢纽汇流。这两天不引入任何新概念，只做整合、加固与呈现。
+> **Day 29 兼作缓冲**——前面任何一天欠账，在这一天清偿。
+
+| Day | 主题 | 涉及编号 | 交付物 | 验收标准 |
+|:---|:---|:---|:---|:---|
+| **29** | 端到端集成 + 报告定稿 | 全部 | `src/pipeline_demo.py`、`docs/REPORT.md` | ① 一键跑通：HDF5 → 批量张量，无手动步骤；② 复现 Day 27 的最优 DataLoader 配置；③ 用 Day 28 错题表补掉薄弱点；④ `REPORT.md` 定稿，含架构图与关键决策记录 |
+| **30** | 期末验收 + 项目展示 | 全部 | 演示 + `progress.md` 结业复盘 | ① 现场跑通 `pipeline_demo.py`，展示时长 ≤10 分钟；② 说清每个设计决策的取舍（为什么懒加载、为什么 worker_init_fn、最优配置怎么来的）；③ 完成全程复盘，写清 30 天的能力增量与下一步方向 |
 
 ---
 
@@ -187,7 +232,8 @@ Day 7 / 14 / 21 / 28 为测试日，题型固定：
 | M4 `num_workers=4` 平稳运行 + 内存 <2GB | Day 19 | v0.3 + 内存记录 | ☐ |
 | M5 动作分块 `[K,7]` 输出 | Day 24 | v0.5 | ☐ |
 | M6 压测报告出炉 | Day 27 | `BENCHMARK.md` | ☐ |
-| M7 项目验收展示 | Day 28 | `REPORT.md` + demo | ☐ |
+| M7 四周知识收口 | Day 28 | 周测 4 ≥60% + 错题汇总 | ☐ |
+| M8 项目验收展示 | Day 30 | `REPORT.md` + `pipeline_demo.py` | ☐ |
 
 ---
 
@@ -200,7 +246,7 @@ Day 7 / 14 / 21 / 28 为测试日，题型固定：
 4. **错误处理**：每个脚本必须示范边界情况处理，禁止省略。
 5. **单日新概念 ≤3 个**。
 6. **禁止直接给练习完整答案**（只给提示）。
-7. **代码提交前必须过 code-reviewer agent 审核**。
+7. **代码 push 前必须过 code-reviewer agent 审核**。
 8. **范围**：不引入本计划外的深度学习内容（不做模型架构、不做训练调参、不做多模态对齐）。
    本仓库只到"数据管道"为止。
 
