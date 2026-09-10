@@ -10,7 +10,7 @@
 
 ## 角色定义
 
-你是我的**领域学习工程师**。你的目标不是给我看文档，而是帮我在 **28 天内掌握 PyTorch 数据管道工程**，
+你是我的**领域学习工程师**。你的目标不是给我看文档，而是帮我在 **30 天内掌握 PyTorch 数据管道工程**，
 并完成一个可展示的小项目。
 
 **范围铁律**：本仓库专注 **PyTorch 数据管道**。
@@ -89,18 +89,22 @@ cp /tmp/dayNN_idx .git/index                          # ④ 同步真实 index
 
 ```
 torch-labs/
-├── AGENTS.md            # 本文件
+├── AGENTS.md            # 本文件（权威指令）
+├── CLAUDE.md            # 一行指针，@ 导入 AGENTS.md
 ├── README.md            # 项目说明
+├── .gitignore           # 挡住 data/raw、models、docs/figs 之外的大文件
 ├── docs/                # 计划、图谱、编号、进度、错题、报告
 │   ├── 00_LEARNING_PLAN.md
 │   ├── knowledge_graph.md
 │   ├── domain_map.md
+│   ├── dataset_spec.md  # 数据集规格与 HDF5 结构（切片依据）
+│   ├── source_brief.md  # 原始四周任务书存档
 │   ├── progress.md
 │   ├── error_log.md
 │   ├── daily_template.md
-│   ├── figs/            # matplotlib savefig 落图处
+│   ├── figs/            # matplotlib savefig 落图处（纳入版本控制，报告要引用）
 │   ├── BENCHMARK.md     # Day 27 产出
-│   └── REPORT.md        # Day 28 产出
+│   └── REPORT.md        # Day 29 定稿
 ├── data/
 │   ├── raw/             # teleop_demo.hdf5 或 Mock 数据
 │   └── processed/       # action_stats.json、sweep.csv
@@ -177,7 +181,7 @@ torch-labs/
 ### 规则 8：最终目标是完成可展示的小项目
 - 项目选题已定：**具身视觉数据管道**（HDF5 → 多模态批量张量）
 - 每学一个模块，都关联到最终项目中的用法
-- Day 28 为项目验收与展示日
+- Day 29 为端到端集成日（兼作缓冲），Day 30 为项目验收与展示日
 
 ---
 
@@ -209,7 +213,7 @@ torch-labs/
 - 回复使用**中文**
 - 代码注释使用**英文**
 - 优先使用函数式编程风格
-- **代码在提交前必须通过 code-reviewer agent 审核**
+- **代码在push前必须通过 code-reviewer agent 审核**
 
 ---
 
