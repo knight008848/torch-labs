@@ -21,3 +21,11 @@ venv/
 .idea/
 Thumbs.db
 desktop.ini
+
+# Claude Code project-local config -- personal machine state, never shared.
+# settings.local.json holds per-machine permission grants, not project policy,
+# and can accumulate machine-specific paths. Repo-level rule so it holds on any
+# clone, independent of the global ~/.config/git/ignore on this WSL box.
+# NOTE: if shared agent definitions (.claude/agents/) are ever added, place a
+# negation rule for them above this line -- see dsh-skills-deepdive.
+.claude/
