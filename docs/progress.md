@@ -1,0 +1,123 @@
+# 进度追踪
+
+> **规则 4**：每次学习后必须更新本文件。
+> 每天收工前勾选完成项、记录薄弱点、写下下一步。
+
+---
+
+## 当前状态
+
+| 项 | 值 |
+|:---|:---|
+| 当前 Day | 0（未开始） |
+| 当前周 | — |
+| 当前里程碑 | M0 计划就绪 |
+| 累计投入 | 0 h |
+| 本周投入 | 0 h / 20 h |
+
+---
+
+## 周测成绩
+
+| 测试 | 日期 | 选择题 | 代码补全 | 实战 | 总分 | 是否 ≥60% |
+|:---|:---|:---|:---|:---|:---|:---|
+| 周测 1（Day 7） | — | /4 | /2 | /1 | — | ☐ |
+| 周测 2（Day 14） | — | /4 | /2 | /1 | — | ☐ |
+| 周测 3（Day 21） | — | /4 | /2 | /1 | — | ☐ |
+| 期末（Day 28） | — | /4 | /2 | /1 | — | ☐ |
+
+---
+
+## 逐日记录
+
+### 📌 W1（Day 1-7）｜地基 I：Tensor 与 autograd
+
+- [ ] **Day 1** 环境奠基与数据落地 ｜ 交付：`day_01_env_and_data.py`、`src/env_check.py` ｜ 耗时：__
+- [ ] **Day 2** Tensor 三要素 dtype/shape/device ｜ 交付：`day_02_tensor_basics.py` ｜ 耗时：__
+- [ ] **Day 3** 形状手术 view/reshape/permute ｜ 交付：`day_03_shape_ops.py` ｜ 耗时：__
+- [ ] **Day 4** 索引、切片与布尔掩膜 ｜ 交付：`day_04_indexing.py` ｜ 耗时：__
+- [ ] **Day 5** 广播与 in-place 陷阱 ｜ 交付：`day_05_broadcast.py` ｜ 耗时：__
+- [ ] **Day 6** autograd 动态计算图 ｜ 交付：`day_06_autograd.py` ｜ 耗时：__
+- [ ] **Day 7** 周测 1 + 复盘 ｜ 交付：`day_07_quiz_1.py` ｜ 耗时：__
+
+**W1 复盘**
+- 完成事项：
+- 做错的练习及分析（记入 `error_log.md`）：
+- 新发现的薄弱点：
+- 复述检验①（Tensor 与 NumPy 的关系）是否流畅：
+- 下一步计划：
+
+### 📌 W2（Day 8-14）｜地基 II：模块化、训练循环与数据接口
+
+- [ ] **Day 8** nn.Module 与参数容器 ｜ 交付：`day_08_nn_module.py` ｜ 耗时：__
+- [ ] **Day 9** 损失函数与优化器 ｜ 交付：`day_09_loss_optim.py` ｜ 耗时：__
+- [ ] **Day 10** 完整训练循环 + 保存加载 ｜ 交付：`day_10_train_loop.py` ｜ 耗时：__
+- [ ] **Day 11** Dataset / DataLoader 接口契约 ｜ 交付：`day_11_dataset_contract.py` ｜ 耗时：__
+- [ ] **Day 12** 管道模块 A 起步：Dataset 骨架 ｜ 交付：`src/embodied_dataset.py` v0.1 ｜ 耗时：__
+- [ ] **Day 13** 视觉张量缝合 BGR→RGB / HWC→CHW ｜ 交付：`day_13_vision_bridge.py` ｜ 耗时：__
+- [ ] **Day 14** 周测 2 + 复盘 ｜ 交付：`day_14_quiz_2.py` ｜ 耗时：__
+
+**W2 复盘**
+- 完成事项：
+- 做错的练习及分析：
+- 新发现的薄弱点：
+- 复述检验②（Dataset 与 DataLoader 的分工）是否流畅：
+- 下一步计划：
+
+### 📌 W3（Day 15-21）｜管道：真实 HDF5 与 I/O 破局
+
+- [ ] **Day 15** HDF5 结构探针与懒加载 ｜ 交付：`day_15_hdf5_probe.py` ｜ 耗时：__
+- [ ] **Day 16** 真实 hdf5 替换 Mock ｜ 交付：`src/embodied_dataset.py` v0.2 ｜ 耗时：__
+- [ ] **Day 17** fork 死锁原理与复现 ｜ 交付：`day_17_fork_deadlock.py` ｜ 耗时：__
+- [ ] **Day 18** worker_init_fn 修复 ｜ 交付：`src/embodied_dataset.py` v0.3 ｜ 耗时：__
+- [ ] **Day 19** 内存占用实测与泄漏排查 ｜ 交付：`day_19_memory_profile.py` ｜ 耗时：__
+- [ ] **Day 20** 多模态字典契约与批量化 ｜ 交付：`src/embodied_dataset.py` v0.4 ｜ 耗时：__
+- [ ] **Day 21** 周测 3 + 复盘 ｜ 交付：`day_21_quiz_3.py` ｜ 耗时：__
+
+**W3 复盘**
+- 完成事项：
+- 做错的练习及分析：
+- 新发现的薄弱点：
+- 复述检验③（fork 死锁的生活类比）是否流畅：
+- `num_workers=4` 内存峰值实测值：__ GB（目标 <2GB）
+- 下一步计划：
+
+### 📌 W4（Day 22-28）｜状态规范化、动作分块与压测
+
+- [ ] **Day 22** 物理状态张量化 ｜ 交付：`day_22_state_tensor.py` ｜ 耗时：__
+- [ ] **Day 23** Min-Max 归一化到 [-1,1] ｜ 交付：`src/normalize.py` + `action_stats.json` ｜ 耗时：__
+- [ ] **Day 24** 动作分块滑窗 [K,7] ｜ 交付：`day_24_action_chunking.py` ｜ 耗时：__
+- [ ] **Day 25** pin_memory 与 8GB 显存约束 ｜ 交付：`day_25_pin_memory.py` ｜ 耗时：__
+- [ ] **Day 26** I/O 甜点扫描 ｜ 交付：`day_26_param_sweep.py` + `sweep.csv` ｜ 耗时：__
+- [ ] **Day 27** FPS 基准与压测报告 ｜ 交付：`day_27_fps_bench.py` + `docs/BENCHMARK.md` ｜ 耗时：__
+- [ ] **Day 28** 期末验收 + 项目展示 ｜ 交付：`docs/REPORT.md` + `src/pipeline_demo.py` ｜ 耗时：__
+
+**W4 复盘**
+- 完成事项：
+- 做错的练习及分析：
+- 新发现的薄弱点：
+- 复述检验④（瓶颈在哪、怎么证明）是否流畅：
+- 最优 DataLoader 配置：batch_size=__ / num_workers=__ / prefetch_factor=__ / pin_memory=__
+- 下一步计划（Month 2 方向）：
+
+---
+
+## 薄弱点汇总
+
+> 每周末更新。正确率 <60% 的模块需安排补习日（规则 7）。
+
+| 概念编号 | 概念 | 出错次数 | 是否已补习 | 备注 |
+|:---|:---|:---|:---|:---|
+| — | — | — | — | — |
+
+---
+
+## 里程碑勾选
+
+- [ ] M1 环境就绪 + 数据落地（Day 1）
+- [ ] M2 Tensor/autograd 打通（Day 7）
+- [ ] M3 `dataset[0]` 返回三件套字典（Day 13）
+- [ ] M4 `num_workers=4` 平稳 + 内存 <2GB（Day 19）
+- [ ] M5 动作分块 `[K,7]` 输出（Day 24）
+- [ ] M6 压测报告出炉（Day 27）
+- [ ] M7 项目验收展示（Day 28）
