@@ -1,13 +1,13 @@
-# torch-labs — PyTorch 28 天：从 Tensor 到具身数据管道
+# torch-labs — PyTorch 30 天：从 Tensor 到具身数据管道
 
 > 建立日期：2026-09-10
-> 周期：28 天（Day 1-28）
+> 周期：30 天（Day 1-30），Day 7/14/21/28 为周测日，Day 29-30 为冲刺与验收
 > 时间预算：20 小时/周（≈2.8 小时/天）
 
 ## 这个仓库是什么
 
 一份**全新的 PyTorch 学习计划**。以 `docs/source_brief.md` 的《Embodied AI Data Pipeline: Month 1 Sprint》为主线，
-把它的四周数据管道冲刺，扩展成"先打地基、再上工程"的 28 天路线。
+把它的四周数据管道冲刺，扩展成"先打地基、再上工程"的 30 天路线。
 
 **OpenCV 与 pandas 在本计划中是辅助角色**，不是学习目标：
 
@@ -23,7 +23,7 @@
 一个可展示的 PyTorch 数据管道：HDF5（robomimic Lift）→ 多模态批量张量，
 在 8GB 显存约束下跑出可复现的 FPS 基准，并产出压测报告。
 
-对应 `source_brief.md` 的四个交付物，全部收敛到 Day 28 的验收。
+对应 `source_brief.md` 的四个交付物，全部收敛到 Day 30 的验收。
 
 ## 目录结构
 
@@ -33,7 +33,7 @@ torch-labs/
 ├── AGENTS.md                  # ★ agent 指令入口（跨工具约定，原 CLAUDE.md 的 PyTorch 改写版）
 ├── CLAUDE.md                  # 一行指针，@ 导入 AGENTS.md
 ├── docs/
-│   ├── 00_LEARNING_PLAN.md    # ★ 28 天主计划（唯一权威路线）
+│   ├── 00_LEARNING_PLAN.md    # ★ 30 天主计划（唯一权威路线）
 │   ├── knowledge_graph.md     # ★ PyTorch 枢纽知识图谱（骨架）
 │   ├── domain_map.md          # ★ 概念编号地图（引用用）
 │   ├── dataset_spec.md        # ★ 数据集规格与准备（robomimic / HDF5 结构）
@@ -43,7 +43,7 @@ torch-labs/
 │   ├── daily_template.md      # 每日交付文件头模板
 │   ├── figs/                  # （运行期产出）matplotlib savefig 落图处
 │   ├── BENCHMARK.md           # （Day 27 产出）压测报告
-│   └── REPORT.md              # （Day 28 产出）项目验收报告
+│   └── REPORT.md              # （Day 29 定稿）项目验收报告
 ├── data/
 │   ├── raw/                   # teleop_demo.hdf5 或 Mock 数据
 │   └── processed/             # 归一化统计、sweep.csv

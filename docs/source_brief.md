@@ -2,7 +2,7 @@
 
 > 来源：原 `D:\Program\git\readme.md`《Embodied AI Data Pipeline: Month 1 Sprint》（已归档删除）。
 > 本文保留**原文的四周任务分解**，用于溯源与验收比对。
-> **日常执行请以 `00_LEARNING_PLAN.md` 为准**——本计划的 28 天排期是它的重排与扩展。
+> **日常执行请以 `00_LEARNING_PLAN.md` 为准**——本计划的 30 天排期是它的重排与扩展。
 
 ---
 
@@ -60,7 +60,7 @@
 
 ---
 
-## 四、Task → 28 天计划映射
+## 四、Task → 30 天计划映射
 
 原文按"周"组织，本计划按"天"重排，并把原文省略的 PyTorch 地基补在 Day 1-11。
 
@@ -77,9 +77,9 @@
 | Task 4.2 | Day 26 | M6 |
 | Task 4.3 | Day 27 | M6 |
 
-**新增（原文没有、本计划补充的基础部分）**：Day 1-11 的 PyTorch 地基
+**新增（原文没有、本计划补充的部分）**：Day 1-11 的 PyTorch 地基
 （Tensor / autograd / nn.Module / 训练循环 / Dataset 契约），
-以及 Day 14、21、28 三次周测与期末验收。
+Day 7 / 14 / 21 / 28 四次周测，以及 Day 29-30 的端到端集成与验收展示。
 
 > 注：原文 Week 1 Task 1.2 写的是 `np.transpose`；本项目统一用 PyTorch 的 `permute`（`T04`），
 > 两者语义等价，但 `permute` 与后续 `unsqueeze`/`contiguous` 的衔接更自然。
