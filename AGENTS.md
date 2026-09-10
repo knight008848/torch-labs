@@ -21,30 +21,36 @@
 
 ## 环境
 
-### 学习环境：WSL + pydata conda
+### 学习环境：WSL + embodied_ai conda
 
 环境位于 **WSL**（不是 Windows 侧）。实测 Windows 侧 Python 3.13.2 为裸环境，无 torch/numpy/h5py。
 
 ```bash
-source ~/miniforge3/bin/activate pydata
-python src/env_check.py     # 可随时检查环境完整性
+source ~/miniforge3/bin/activate embodied_ai
+python src/env_check.py     # Day 1 交付物，尚未创建
 ```
 
-| 库 | 用途 | 状态 |
-|:---|:---|:---|
-| Python 3.11+ | 运行时 | — |
-| **torch** | 主线 | **Day 1 需装**（CUDA 12.x 对应版本） |
-| h5py | HDF5 读取 | Day 1 需装 |
-| numpy | 底座 | — |
-| pandas | 辅助（仅压测表） | Day 1 需装 |
-| opencv-python | 辅助（仅 BGR/RGB 对照） | Day 1 需装 |
-| matplotlib | headless 可视化出口 | — |
+⚠️ **别用 `pydata`**：该环境（Python 3.11.15）没有 torch、没有 h5py，按旧指令激活会直接
+`ModuleNotFoundError: No module named 'torch'`。`base`(3.13) 与 `py314`(3.14) 同样没有。
+**本机四个 conda 环境里只有 `embodied_ai` 装了 torch**，它是本项目的唯一学习环境。
 
-硬件：CUDA 12.0 工具链可用，NVIDIA GPU 存在，**显存上限 8GB（硬约束）**。
+| 库 | 用途 | 状态（2026-09-10 实测 @ embodied_ai） |
+|:---|:---|:---|
+| Python 3.10.19 | 运行时 | ✅ |
+| **torch** | 主线 | ✅ 2.10.0+cu128 |
+| torchvision | 配套 | ✅ 0.25.0+cu128 |
+| h5py | HDF5 读取 | ✅ 3.16.0 |
+| numpy | 底座 | ✅ 2.2.6 |
+| pandas | 辅助（仅压测表） | ✅ 2.3.3 |
+| opencv-python | 辅助（仅 BGR/RGB 对照） | ❌ 缺，Day 13 前补装 |
+| matplotlib | headless 可视化出口 | ✅ 3.10.8 |
+
+硬件：NVIDIA GeForce RTX 2070 with Max-Q Design，sm_75，**显存 8192 MiB = 8GB（硬约束）**。
+torch 为 cu128 编译，实测 `torch.cuda.is_available() == True`，空闲显存约 6.98 GiB。
 
 ### 重要限制：Headless 环境
 
-WSL pydata 环境没有 GUI 支持。所有教学和练习必须遵循替代方案：
+WSL `embodied_ai` 环境没有 GUI 支持。所有教学和练习必须遵循替代方案：
 
 | 原方案 | 替代方案 |
 |:---|:---|
