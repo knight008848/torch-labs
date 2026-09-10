@@ -57,15 +57,18 @@ torch-labs/
 
 ## 环境
 
-pydata conda 环境位于 WSL，**不在 Windows 侧**。
-实测 Windows 侧 Python 3.13.2 为裸环境（无 torch/numpy/h5py）。
+学习环境是 WSL 里的 `embodied_ai` conda 环境（**不在 Windows 侧**）。
+`pydata` / `base` / `py314` 都没有 torch，别激活错。
 
 | 项 | 状态 |
 |:---|:---|
-| WSL | Ubuntu / Ubuntu2 均已安装（本次探测时为 Stopped） |
-| CUDA | 12.0 工具链在 PATH 上，NVIDIA GPU 存在 |
-| torch | **未安装**，Day 1 需装 CUDA 12.x 对应版本 |
+| Python | 3.10.19 |
+| torch | 2.10.0+cu128，CUDA 可用 |
+| h5py / numpy / pandas / matplotlib | 已装 |
+| opencv-python | 未装（Day 13 前补） |
 | 显存上限 | 8GB（硬约束，决定 batch_size 与 prefetch 策略） |
+
+激活命令见 `AGENTS.md` 的"环境"一节。
 
 ## 怎么用这份计划
 
