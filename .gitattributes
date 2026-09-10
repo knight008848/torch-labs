@@ -1,0 +1,18 @@
+# Normalize line endings to LF, both in the repository and in the working tree.
+#
+# This project is worked on from native Windows now and from WSL later. Without
+# this file, Git for Windows' core.autocrlf=true checks text files out as CRLF
+# while WSL checks them out as LF, so every switch between the two environments
+# shows the whole tree as modified.
+#
+# Override with an explicit rule if a file genuinely needs CRLF (e.g. *.bat).
+* text=auto eol=lf
+
+# Binary formats -- never apply text conversion.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.npz   binary
+*.npy   binary
+*.pt    binary
+*.hdf5  binary
