@@ -66,6 +66,15 @@ with h5py.File("data/teleop_demo.hdf5", "r") as f:
 | `data/demo_0/obs/robot0_joint_pos` | `float64 [N, 7]` | 机械臂在任务执行周期内的 7 自由度关节物理状态序列（Proprioception） |
 | `data/demo_0/actions` | `float64 [N, 7]` | 专家操作的目标动作序列，**后续训练 VLA 策略模型的最核心监督标签** |
 
+> ⚠️ **路径含顶层 `data/` 组**（Day 1 踩过）。表里的 `data/` 是 HDF5 内部的一个**组**，
+> 不是文件名、也不是相对目录。Mock 生成器与校验器都从 `experiments/day_01_env_and_data.py`
+> 的 `DATASET_ROOT = "data"` 拼路径，别再手写 `demo_0/...`。
+>
+> 📌 **探针可能看到本表之外的东西**（待 Day 15 实测确认，勿提前写死）：
+> 真实 robomimic 文件据其官方文档还带一个平级的 `mask/` 组，以及 `data` 组上的
+> `env_args` / `total` 属性。本项目**不使用** `mask/`，Day 15 探针看到它属正常，
+> 不要据此判定"文件损坏"；也**不要**在 Day 15 之前按它的存在写任何逻辑。
+
 ### 切片时要留意的三点
 
 1. **`agentview_image` 是 `uint8` + HWC 轴序**——到模型输入需要 `T02`（dtype 转换）、
