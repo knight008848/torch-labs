@@ -42,7 +42,7 @@ python src/env_check.py     # Day 1 交付物，尚未创建
 | h5py | HDF5 读取 | ✅ 3.16.0 |
 | numpy | 底座 | ✅ 2.2.6 |
 | pandas | 辅助（仅压测表） | ✅ 2.3.3 |
-| opencv-python | 辅助（仅 BGR/RGB 对照） | ❌ 缺，Day 13 前补装 |
+| opencv-python-headless | 辅助（仅 BGR/RGB 对照） | ✅ 5.0.0（Day 1 装，见下方 headless 说明） |
 | matplotlib | headless 可视化出口 | ✅ 3.10.8 |
 
 硬件：NVIDIA GeForce RTX 2070 with Max-Q Design，sm_75，**显存 8192 MiB = 8GB（硬约束）**。
@@ -60,6 +60,16 @@ WSL `embodied_ai` 环境没有 GUI 支持。所有教学和练习必须遵循替
 | 鼠标点击选点 | 硬编码坐标 或 `plt.ginput` |
 
 **禁止**在模块或练习中使用 `cv2.imshow()`、`cv2.waitKey()`、`cv2.createTrackbar()`、`cv2.setMouseCallback()`。
+
+⚠️ **别用 `hasattr(cv2, "imshow")` 判断环境有没有 GUI**（2026-09-11 实测 @ opencv-python-headless 5.0.0）。
+headless 轮子**照样导出这四个符号**，`hasattr` 全部返回 `True`；但真调用会抛：
+
+```
+cv2.error: OpenCV(5.0.0) ... error: (-2:Unspecified error) The function is not implemented.
+Rebuild the library with Windows, GTK+ 2.x or Cocoa support.
+```
+
+判断 headless 的唯一可靠方式是**试调用**，不是查属性。这条禁令依然成立：符号在 ≠ 能用。
 
 ### 重要限制：8GB 显存
 
