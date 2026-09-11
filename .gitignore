@@ -15,6 +15,10 @@ __pycache__/
 .ipynb_checkpoints/
 .venv/
 venv/
+# Build artifacts from `pip install -e .` (see pyproject.toml)
+*.egg-info/
+build/
+dist/
 
 # Editor / OS
 .vscode/
