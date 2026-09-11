@@ -128,7 +128,7 @@ Day 7 / 14 / 21 / 28 为测试日，题型固定：
 
 | Day | 主题 | 涉及编号 | 交付物 | 验收标准 |
 |:---|:---|:---|:---|:---|
-| **1** | 环境奠基与数据落地 | X04 | `experiments/day_01_env_and_data.py`、`src/env_check.py` | ① WSL pydata 环境装好 torch（CUDA 12.x 版）+ h5py + pandas + opencv-python，**先跑通 `torch.cuda.is_available()` 再装其余**；② 脚本打印 torch 版本 / CUDA 可用性 / GPU 名 / 显存总量；③ 建好目录骨架；④ `data/raw/teleop_demo.hdf5` 存在且 h5py 能打开，**或** Mock 生成器产出 ≥100MB 结构化 HDF5（下载指令与规格见 `dataset_spec.md`） |
+| **1** | 环境奠基与数据落地 | X04 | `experiments/day_01_env_and_data.py`、`src/env_check.py` | ① WSL **`embodied_ai`** 环境装好 torch（CUDA 12.x 版）+ h5py + pandas + `opencv-python-headless`，**先跑通 `torch.cuda.is_available()` 再装其余**（`pydata` 无 torch，见 `AGENTS.md`）；② 脚本打印 torch 版本 / CUDA 可用性 / GPU 名 / 显存总量；③ 建好目录骨架；④ `data/raw/teleop_demo.hdf5` 存在且 h5py 能打开，**或** Mock 生成器产出 ≥100MB 结构化 HDF5（下载指令与规格见 `dataset_spec.md`） |
 | **2** | Tensor 三要素：dtype / shape / device | T01 T02 T03 B01 | `experiments/day_02_tensor_basics.py` | ① 手写创建 5 种 dtype 张量；② CPU→CUDA→CPU 往返并断言值不变；③ 解释清"图像用 uint8、模型用 float32"的原因；④ **演示 `torch.from_numpy` 共享内存**：改 numpy 原数组，张量跟着变 |
 | **3** | 形状手术：view / reshape / permute | T04 | `experiments/day_03_shape_ops.py` | ① 把 84×84×3 合成图 permute 到 3×84×84；② 证明 permute 后 `.is_contiguous() == False`，并说明为何 `view` 会在此报错；③ 用 matplotlib 存一张"轴序错乱"的图作为反例 |
 | **4** | 索引、切片与布尔掩膜 | T05 | `experiments/day_04_indexing.py` | ① 从 `[N,7]` 中取出指定轨迹段；② 用布尔掩膜筛出某个关节角 > 0.5 的帧；③ 说明 `[1,7]` 与 `[7]` 的区别（保留维度） |
