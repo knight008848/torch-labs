@@ -28,16 +28,25 @@ python src/env_check.py     # 实测环境；任何一项不过即退出码 1
 ⚠️ **只认 `embodied_ai`**：`pydata`(3.11.15)、`base`(3.13)、`py314`(3.14) 都没有 torch，
 激活错会直接 `ModuleNotFoundError: No module named 'torch'`。
 
+**依赖清单与最低版本以 `pyproject.toml` 为准**（重建：`python -m pip install -e .`）。
+本表只说各库**在项目里干什么**，不复述版本号——两处写版本必然漂移：
+
 | 库 | 用途 |
 |:---|:---|
-| Python 3.10.19 / **torch 2.10.0+cu128** | 运行时 / 主线 |
-| torchvision 0.25.0+cu128 | 配套 |
-| h5py 3.16.0 / numpy 2.2.6 | HDF5 读取 / 底座 |
-| pandas 2.3.3 | 辅助（仅压测表） |
-| opencv-python-headless 5.0.0 | 辅助（仅 BGR/RGB 对照） |
-| matplotlib 3.10.8 | headless 可视化出口 |
+| Python | 运行时 |
+| **torch** | 主线 |
+| torchvision | 配套 |
+| h5py / numpy | HDF5 读取 / 底座 |
+| pandas | 辅助（仅压测表） |
+| opencv-python-headless | 辅助（仅 BGR/RGB 对照） |
+| matplotlib | headless 可视化出口 |
 
-硬件：RTX 2070 Max-Q，sm_75，**显存 8192 MiB = 8GB（硬约束）**，空闲约 6.98 GiB。
+⚠️ **torch 必须是 CUDA 12.x 构建**（`src/env_check.py` 的 `REQUIRED_CUDA_MAJOR = "12"`
+会拦下别的版本）。这条是硬约束，且是重建时最容易悄悄坏掉的一项。
+
+硬件：RTX 2070 Max-Q，sm_75，**显存 8192 MiB = 8GB（硬约束）**。
+空闲显存随桌面占用浮动（2026-09-11 实测 7144 MiB / 8192 MiB），别拿这里的数字当配额，
+要用就现场读。
 
 ### Headless 与显存
 
