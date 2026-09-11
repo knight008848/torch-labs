@@ -1,0 +1,62 @@
+# Dependency manifest for the torch-labs 30-day data-pipeline track.
+#
+# Single source of truth for "what must be installed". README and AGENTS.md
+# point here instead of repeating version numbers, so a bump happens in exactly
+# one place.
+#
+# Rebuild:
+#     source ~/miniforge3/bin/activate embodied_ai
+#     python -m pip install -e .
+#     python src/env_check.py          # the check that actually gates a day
+#
+# Floors, not pins. Every floor below is the version verified in `embodied_ai`
+# on 2026-09-11, and each is an *equality* today -- so `pip install -e .` on
+# this box is a no-op. On a different box pip picks the newest version that
+# satisfies the floors, which is not the verified one.
+#
+# Two contracts this file deliberately does NOT guarantee, both enforced by
+# `src/env_check.py` instead:
+#   * torch must be a CUDA 12.x build (REQUIRED_CUDA_MAJOR = "12")
+#   * the GPU is sm_75 (RTX 2070 Max-Q), which newer torch builds may drop
+# Re-run env_check.py after any rebuild on a machine other than this one.
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "torch-labs"
+version = "0.1.0"
+description = "30-day PyTorch data-pipeline track: HDF5 -> multimodal batch tensors"
+requires-python = ">=3.10"
+
+dependencies = [
+    # torch needs no special index. The PyPI linux wheel for 2.10.0 already
+    # bundles CUDA 12.8 -- `torch.__version__` reports `2.10.0+cu128` while the
+    # dist-info is plain `torch-2.10.0`, with no pip index configured on this
+    # box. Adding download.pytorch.org here would only re-introduce a second
+    # wheel source that can disagree with the first.
+    "torch>=2.10",
+    # Not imported by any script yet -- declared because AGENTS.md counts it
+    # part of the environment, in anticipation of image transforms. Note the
+    # two floors are independent here, but torchvision pins to a specific torch
+    # minor; on a fresh box they can resolve to an incompatible pair.
+    "torchvision>=0.25",
+    "numpy>=2.2",                 # 2.x ABI is what torch is built against; 2.2 is the verified version
+    "h5py>=3.16",
+    "pandas>=2.3",                # auxiliary: benchmark tables only (Day 26-27)
+    "matplotlib>=3.10",           # auxiliary: headless savefig is the only output
+
+    # Headless ONLY. `opencv-python` and `opencv-python-headless` install the
+    # same `cv2` module into the same directory and overwrite each other, so
+    # which one wins depends on install order. Never install both. The GUI entry
+    # points are forbidden by AGENTS.md (no display), so headless costs this
+    # project nothing. Auxiliary: Day 13 BGR/RGB comparison only.
+    "opencv-python-headless>=5.0",
+]
+
+# The repo is a collection of scripts run by path (`python src/env_check.py`),
+# not an importable package -- src/ has no __init__.py. Declaring no packages
+# keeps `pip install -e .` usable purely as a dependency installer.
+[tool.setuptools]
+packages = []
