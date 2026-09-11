@@ -53,7 +53,8 @@ torch-labs/
 └── models/                    # checkpoint
 ```
 
-> 注：`data/ experiments/ notebooks/ src/ models/` 在 Day 1 建立；本仓库当前只含计划与文档。
+> 注：`data/ experiments/ notebooks/ src/ models/` 已于 Day 1（2026-09-11）建立。
+> 当前进度见 `docs/progress.md`。
 
 ## 环境
 
@@ -65,7 +66,7 @@ torch-labs/
 | Python | 3.10.19 |
 | torch | 2.10.0+cu128，CUDA 可用 |
 | h5py / numpy / pandas / matplotlib | 已装 |
-| opencv-python | 未装（Day 13 前补） |
+| opencv-python-headless | 5.0.0（只装 headless，GUI 入口调用即报错） |
 | 显存上限 | 8GB（硬约束，决定 batch_size 与 prefetch 策略） |
 
 激活命令见 `AGENTS.md` 的"环境"一节。
