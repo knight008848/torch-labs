@@ -73,8 +73,12 @@ python src/env_check.py     # 实测环境；任何一项不过即退出码 1
 提交后自查（应恒为 1）：
 
 ```bash
-git show --name-status <sha> | grep -c .
+git show --name-only --format="" <sha> | grep -c .
 ```
+
+⚠️ `--format=""` 不能省：少了它，`git show` 会连 commit header、正文和
+`1 file changed` 统计一起打出来，`grep -c .` 在**任何**提交上都返回十几。
+这条自查正是防 `read-tree` 误删全库的闸门（见下节）——恒报警的检查等于没有检查。
 
 ### 提交信息
 
