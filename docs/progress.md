@@ -10,11 +10,11 @@
 
 | 项 | 值 |
 |:---|:---|
-| 当前 Day | 0（未开始） |
-| 当前周 | — |
-| 当前里程碑 | M0 计划就绪 |
-| 累计投入 | 0 h |
-| 本周投入 | 0 h / 20 h |
+| 当前 Day | 1（2026-09-11） |
+| 当前周 | W1 地基 I：Tensor 与 autograd |
+| 当前里程碑 | M1 已达成，M2 待办（Day 7 周测） |
+| 累计投入 | 0.5 h |
+| 本周投入 | 0.5 h / 20 h |
 
 ---
 
@@ -33,7 +33,7 @@
 
 ### 📌 W1（Day 1-7）｜地基 I：Tensor 与 autograd
 
-- [ ] **Day 1** 环境奠基与数据落地 ｜ 交付：`day_01_env_and_data.py`、`src/env_check.py` ｜ 耗时：__
+- [x] **Day 1** 环境奠基与数据落地 ｜ 交付：`day_01_env_and_data.py`、`src/env_check.py` ｜ 耗时：0.5 h
 - [ ] **Day 2** Tensor 三要素 dtype/shape/device ｜ 交付：`day_02_tensor_basics.py` ｜ 耗时：__
 - [ ] **Day 3** 形状手术 view/reshape/permute ｜ 交付：`day_03_shape_ops.py` ｜ 耗时：__
 - [ ] **Day 4** 索引、切片与布尔掩膜 ｜ 交付：`day_04_indexing.py` ｜ 耗时：__
@@ -42,11 +42,27 @@
 - [ ] **Day 7** 周测 1 + 复盘 ｜ 交付：`day_07_quiz_1.py` ｜ 耗时：__
 
 **W1 复盘**
-- 完成事项：
-- 做错的练习及分析（记入 `error_log.md`）：
+
+> Day 1 增量（Day 7 时再终稿）：
+
+- 完成事项（Day 1）：`src/env_check.py` 通过（含 `torch built for CUDA 12.8` 实测校验）；
+  `data/raw/teleop_demo.hdf5` 落地（6 demo / 5700 帧 / 116.1 MiB，
+  路径含顶层 `data/` 组，逐字对齐 `dataset_spec.md` 第 3 节）；
+  `docs/figs/day_01_mock_frame.png` 肉眼确认场景正确；目录骨架幂等校验；
+  生成脚本**字节级确定性**已实测（两次 `--force` 的 md5 一致）
+- 做错的练习及分析（记入 `error_log.md`）：Day 1 两条，均归类 **K**——
+  ① 计划文档写 `pydata`、实测只有 `embodied_ai` 有 torch（文档 ≠ 实测）；
+  ② Mock 漏掉顶层 `data/` 组，且校验器与生成器"一起错"而互相放行（自洽 ≠ 正确）。
+  两条都由 code-reviewer 复核环节抓出，②已在提交前修掉并补了 9 个反例自测
 - 新发现的薄弱点：
-- 复述检验①（Tensor 与 NumPy 的关系）是否流畅：
-- 下一步计划：
+  1. **真实数据未落地**——`data/raw/teleop_demo.hdf5` 目前是 Mock。robomimic 原始 URL
+     探测返回 404，且本机 curl 直连 HTTPS 报 TLS 校验失败（exit 60），需先排查证书/网络再下载。
+     不影响 Day 2-14（Mock 结构等价），但 **Day 16 之前必须解决**
+  2. **Mock 是 RGB 按构造写的**，`channel_order` 属性已显式标注。这是个便利也是一个陷阱：
+     Day 13 在 Mock 上做的通道序实验**不能推断真实数据**，真判定仍留 Day 16
+- 复述检验①（Tensor 与 NumPy 的关系）是否流畅：Day 7 执行
+- 下一步计划（Day 2）：Tensor 三要素 dtype/shape/device（T01 T02 T03 B01），
+  练习素材直接用今天落地的 `[N,84,84,3] uint8` 与 `[N,7] float64`
 
 ### 📌 W2（Day 8-14）｜地基 II：模块化、训练循环与数据接口
 
@@ -132,7 +148,7 @@
 
 ## 里程碑勾选
 
-- [ ] M1 环境就绪 + 数据落地（Day 1）
+- [x] M1 环境就绪 + 数据落地（Day 1）
 - [ ] M2 Tensor/autograd 打通（Day 7）
 - [ ] M3 `dataset[0]` 返回三件套字典（Day 13）
 - [ ] M4 `num_workers=4` 平稳 + 内存 <2GB（Day 19）
