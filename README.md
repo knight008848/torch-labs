@@ -59,7 +59,7 @@ torch-labs/
 
 ## 环境
 
-WSL的 conda环境可以更好的发挥torch的全部性能，依赖清单与最低版本
+WSL 的 conda 环境可以更好的发挥 torch 的全部性能，依赖清单与最低版本
 **以 `pyproject.toml` 为唯一出处**，本文件不再复述版本号，免得两处漂移。
 
 ```bash
