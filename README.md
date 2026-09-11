@@ -30,6 +30,7 @@
 ```
 torch-labs/
 ├── README.md                  # 本文件
+├── pyproject.toml             # ★ 依赖清单与最低版本（唯一出处）
 ├── AGENTS.md                  # ★ agent 指令入口（跨工具约定，原 CLAUDE.md 的 PyTorch 改写版）
 ├── CLAUDE.md                  # 一行指针，@ 导入 AGENTS.md
 ├── docs/
@@ -58,18 +59,26 @@ torch-labs/
 
 ## 环境
 
-学习环境是 WSL 里的 `embodied_ai` conda 环境（**不在 Windows 侧**）。
-`pydata` / `base` / `py314` 都没有 torch，别激活错。
+WSL 里的 conda 环境 `embodied_ai`（**不在 Windows 侧**）。依赖清单与最低版本
+**以 `pyproject.toml` 为唯一出处**，本文件不再复述版本号，免得两处漂移。
 
-| 项 | 状态 |
-|:---|:---|
-| Python | 3.10.19 |
-| torch | 2.10.0+cu128，CUDA 可用 |
-| h5py / numpy / pandas / matplotlib | 已装 |
-| opencv-python-headless | 5.0.0（只装 headless，GUI 入口调用即报错） |
-| 显存上限 | 8GB（硬约束，决定 batch_size 与 prefetch 策略） |
+```bash
+source ~/miniforge3/bin/activate embodied_ai
+python -m pip install -e .     # 装齐依赖；本机已满足时是空操作
+python src/env_check.py        # 实测校验，任一项不过即退出码 1
+```
 
-激活命令见 `AGENTS.md` 的"环境"一节。
+清单里是**下限不是锁版**：本机跑第二行是空操作，但换台机器重建时 pip 会挑满足下限的
+最新版。三条硬约束不在这份清单的保证范围内，重建后**必须**靠 `env_check.py` 复核：
+
+- **torch 必须是 CUDA 12.x 构建**——`env_check.py` 会拦下别的版本。同时新版 torch
+  可能不再为 sm_75 出构建，而本机是 RTX 2070 Max-Q。
+- **显存 8GB**——`batch_size` / `prefetch_factor` / `num_workers` 的上限由它定，
+  任何 DataLoader 配置变更都要在报告里记录显存占用。
+- **headless**——无 GUI，可视化一律 `matplotlib` `savefig`，禁止 `cv2.imshow`
+  系列；只有真调用才会抛错，别用 `hasattr` 判断。
+
+`embodied_ai` 之外的 conda 环境都没有 torch，别激活错。细则见 `AGENTS.md` 的「环境」一节。
 
 ## 怎么用这份计划
 
