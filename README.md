@@ -59,7 +59,7 @@ torch-labs/
 
 ## 环境
 
-WSL 里的 conda 环境 `embodied_ai`（**不在 Windows 侧**）。依赖清单与最低版本
+WSL的 conda环境可以更好的发挥torch的全部性能，依赖清单与最低版本
 **以 `pyproject.toml` 为唯一出处**，本文件不再复述版本号，免得两处漂移。
 
 ```bash
@@ -78,7 +78,7 @@ python src/env_check.py        # 实测校验，任一项不过即退出码 1
 - **headless**——无 GUI，可视化一律 `matplotlib` `savefig`，禁止 `cv2.imshow`
   系列；只有真调用才会抛错，别用 `hasattr` 判断。
 
-`embodied_ai` 之外的 conda 环境都没有 torch，别激活错。细则见 `AGENTS.md` 的「环境」一节。
+环境细则见 `AGENTS.md` 的「环境」一节。
 
 ## 怎么用这份计划
 
