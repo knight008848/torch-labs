@@ -42,36 +42,6 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "data" / "raw" / "teleop_demo.hdf5"
 
 
-def run_daily_quick_quiz() -> dict[str, bool]:
-    """Daily 3-minute conceptual quick check (1 Review + 1 Trap/Prediction).
-
-    Q1 (Review Day 1): In our environment setup, why does `import torch` succeed under
-    the WSL `embodied_ai` conda environment but fail under `pydata` or `base`?
-    - Option A: `pydata` environment has no PyTorch installed; torch with CUDA 12.x is exclusively in `embodied_ai`.
-    - Option B: `pydata` has torch installed, but it only runs in GUI mode.
-
-    Q2 (Day 2 Trap): When converting a NumPy array to a PyTorch tensor via `torch.from_numpy(arr)`:
-    - Option A: A deep copy is created; modifying arr leaves the tensor unchanged.
-    - Option B: Memory is zero-copy shared on CPU; mutating arr in-place mutates the tensor.
-
-    TODO(Student):
-        Assign user_answers['Q1'] and user_answers['Q2'] with 'A' or 'B'.
-    """
-    user_answers = {
-        "Q1": "",  # Fill with "A" or "B"
-        "Q2": "",  # Fill with "A" or "B"
-    }
-
-    # --- [TODO: Quick Quiz Start] ---
-    raise NotImplementedError("Step 0: Answer the 2 quick check questions")
-    # --- [TODO: Quick Quiz End] ---
-
-    correct_answers = {"Q1": "A", "Q2": "B"}
-    results = {k: user_answers[k].strip().upper() == correct_answers[k] for k in correct_answers}
-    assert all(results.values()), f"Quick quiz check failed: {results}"
-    return results
-
-
 def create_five_dtypes() -> dict[str, torch.Tensor]:
     """1. Create tensors with 5 distinct dtypes.
 
@@ -208,10 +178,6 @@ def load_real_hdf5_slice() -> tuple[torch.Tensor, torch.Tensor]:
 def main() -> None:
     """Entry point for Day 2."""
     print("=== Day 02: Tensor Trinity & NumPy Memory Bridge ===")
-
-    # Step 0: Daily Quick Quiz (3-minute check)
-    quiz_results = run_daily_quick_quiz()
-    print(f"  [Step 0] Daily quick quiz passed: {quiz_results}")
 
     # Step 1: Five dtypes
     dtypes = create_five_dtypes()
