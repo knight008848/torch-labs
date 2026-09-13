@@ -40,9 +40,20 @@ DATA_RAW = ROOT / "data" / "raw"
 FIG_DIR = ROOT / "docs" / "figs"
 
 
+def run_daily_quick_quiz() -> dict[str, bool]:
+    """Daily 3-minute conceptual quick check (1 Review + 1 Trap/Prediction)."""
+    # --- [TODO: Quick Quiz Start] ---
+    # Answer 2 conceptual check questions before starting exercise
+    # --- [TODO: Quick Quiz End] ---
+    return {"Q1_review": True, "Q2_trap": True}
+
+
 def main() -> None:
     """Entry point. Keep each step a small pure function."""
     FIG_DIR.mkdir(parents=True, exist_ok=True)
+
+    # 0) Daily quick quiz (3 minutes)
+    quiz_results = run_daily_quick_quiz()
 
     # 1) <step one>
     # 2) <step two>
@@ -59,6 +70,7 @@ if __name__ == "__main__":
 | 项 | 约定 |
 |:---|:---|
 | 文件命名 | `experiments/day_NN_主题.py`，NN 补零（`day_01`、`day_28`） |
+| 随堂快测 | 脚本开头设 3 分钟 `run_daily_quick_quiz()`（1 温故 + 1 知新） |
 | 注释语言 | 英文 |
 | 风格 | 函数式优先，`main()` 只做编排，每步是纯函数 |
 | 路径 | 一律 `pathlib.Path`，用 `Path(__file__)` 定位而非 CWD |
