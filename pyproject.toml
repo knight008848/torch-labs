@@ -9,10 +9,12 @@
 #     python -m pip install -e .
 #     python src/env_check.py          # the check that actually gates a day
 #
-# Floors, not pins. Every floor below is the version verified in `embodied_ai`
-# on 2026-09-11, and each is an *equality* today -- so `pip install -e .` on
-# this box is a no-op. On a different box pip picks the newest version that
-# satisfies the floors, which is not the verified one.
+# Floors, not pins -- with one deliberate exception: torch also carries an
+# upper bound, explained at its entry below. Every floor is the version verified
+# in `embodied_ai` on 2026-09-11, and each is an *equality* today -- so
+# `pip install -e .` on this box is a no-op. On a different box pip picks the
+# newest version that satisfies the spec, which for every package but torch is
+# not the verified one.
 #
 # Two contracts this file deliberately does NOT guarantee, both enforced by
 # `src/env_check.py` instead:
@@ -61,8 +63,9 @@ dependencies = [
     # Headless ONLY. `opencv-python` and `opencv-python-headless` install the
     # same `cv2` module into the same directory and overwrite each other, so
     # which one wins depends on install order. Never install both. The GUI entry
-    # points are forbidden by AGENTS.md (no display), so headless costs this
-    # project nothing. Auxiliary: Day 13 BGR/RGB comparison only.
+    # points are forbidden by AGENTS.md -- headless there is a discipline, not a
+    # property of the box (WSLg does provide a display, so a GUI backend would
+    # silently work and then block). Auxiliary: Day 13 BGR/RGB comparison only.
     "opencv-python-headless>=5.0",
 ]
 
