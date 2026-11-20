@@ -22,7 +22,7 @@ OpenCV 只在 Day 13 读图做 BGR/RGB 对照，pandas 只在 Day 26-27 整理�
 
 ```bash
 source ~/miniforge3/bin/activate embodied_ai
-python src/env_check.py     # 实测环境；任何一项不过即退出码 1
+python src/env_check.py     # 实测环境；任一 FAIL 即退出码 1（WARN 只提示，不阻断）
 ```
 
 ⚠️ **只认 `embodied_ai`**：`pydata`(3.11.15)、`base`(3.13)、`py314`(3.14) 都没有 torch，
