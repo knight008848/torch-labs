@@ -128,7 +128,7 @@ torch-labs/
 │   ├── progress.md / error_log.md / daily_template.md
 │   ├── figs/                 # savefig 落图处（纳入版控，报告要引用）
 │   └── BENCHMARK.md / REPORT.md   # Day 27 / Day 29 产出
-├── data/raw/            # teleop_demo.hdf5（真数据或 Mock，gitignore）
+├── data/raw/            # teleop_demo.hdf5（Mock）+ test/（真 Lift ×3），gitignore
 ├── data/processed/      # action_stats.json、sweep.csv
 ├── experiments/         # day_NN_主题.py 每日交付
 ├── src/                 # 可复用代码（env_check.py、embodied_dataset.py）
