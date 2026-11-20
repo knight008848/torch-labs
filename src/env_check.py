@@ -170,20 +170,28 @@ def probe_gpu_compute(torch_module) -> Probe:
 
     All-ones input keeps the expected value exact in float32 -- every element
     of ones @ ones is the inner dimension, an integer well inside the 24-bit
-    mantissa -- so the comparison needs no tolerance. Two 256x256 float32
-    matrices cost ~512 KiB against the 8 GiB budget but still go through cuBLAS
-    rather than a scalar fallback, which is what makes this a real test.
+    mantissa -- so the comparison needs no tolerance. The two payload matrices
+    are 512 KiB, but the first matmul leaves cuBLAS workspace resident:
+    memory_allocated() settles at ~8.1 MiB and stays flat across repeated calls
+    (measured, not a leak). Negligible against the 8 GiB budget, and it goes
+    through cuBLAS rather than a scalar fallback, which is what makes this a
+    real test.
     """
-    if not torch_module.cuda.is_available():
-        return Probe("gpu compute (matmul)", FAIL, "skipped - no usable GPU")
-
     size = 256
+    expected = float(size)
     try:
+        # is_available() itself raises when the driver is mismatched or libcuda
+        # is missing -- probe_cuda() guards the same call for the same reason.
+        # Leaving it outside the try would turn the most likely rebuild failure
+        # into a traceback that hides every later section of the report.
+        if not torch_module.cuda.is_available():
+            return Probe("gpu compute (matmul)", FAIL, "not run - no usable GPU")
+
         ones = torch_module.ones(
             (size, size), device="cuda", dtype=torch_module.float32
         )
         product = ones @ ones
-        exact = bool((product == float(size)).all().item())
+        mismatched = int((product != expected).sum().item())
         total = float(product.sum().item())
     except Exception as exc:
         # "no kernel image is available for execution on the device" arrives
@@ -192,8 +200,15 @@ def probe_gpu_compute(torch_module) -> Probe:
         # run on this card.
         return Probe("gpu compute (matmul)", FAIL, f"raised {exc!r}")
 
-    if not exact:
-        return Probe("gpu compute (matmul)", FAIL, f"wrong result, sum={total!r}")
+    if mismatched:
+        # Report the count, not just the sum: a wrong result can still sum to
+        # the expected value, so "wrong result, sum=16777216" would read as a
+        # contradiction.
+        return Probe(
+            "gpu compute (matmul)",
+            FAIL,
+            f"{mismatched}/{size * size} elements != {expected:.0f}, sum={total:.0f}",
+        )
     return Probe("gpu compute (matmul)", OK, f"{size}x{size} fp32, sum={total:.0f}")
 
 
@@ -209,20 +224,26 @@ def probe_matplotlib_backend() -> Probe:
 
     WARN, not FAIL: the pipeline itself is unaffected, and failing the whole
     check over a warning that one line in each plotting script prevents would
-    block a day for no reason.
+    block a day for no reason. main() still collects a FAIL raised here, so a
+    future failure branch cannot silently pass the gate.
     """
     try:
         import matplotlib
-    except Exception as exc:
-        return Probe("matplotlib backend", FAIL, f"import failed: {exc!r}")
 
-    backend = matplotlib.get_backend()
+        # str() covers matplotlib versions that return a BackendBase object
+        # instead of a name. get_backend() resolves the backend and may import
+        # pyplot on the way (3.10 auto-selects), so a broken install fails here
+        # rather than at import time -- hence the try covers both calls.
+        backend = str(matplotlib.get_backend())
+    except Exception as exc:
+        return Probe("matplotlib backend", FAIL, f"resolution failed: {exc!r}")
+
     if backend.lower() == "agg":
         return Probe("matplotlib backend", OK, backend)
     return Probe(
         "matplotlib backend",
         WARN,
-        f"{backend} (GUI; call matplotlib.use('Agg') before importing pyplot)",
+        f"{backend} (GUI; call matplotlib.use('Agg') at the top of every plotting script)",
     )
 
 
@@ -292,8 +313,12 @@ def main() -> int:
     print()
     print(format_report("cuda", cuda_probes))
 
+    # Kept in a named variable, not printed inline: a FAIL raised here has to
+    # reach the failure list below, or the report would say "all required checks
+    # passed" while printing a red line above it.
+    backend_probe = probe_matplotlib_backend()
     print()
-    print(format_report("headless contract", [probe_matplotlib_backend()]))
+    print(format_report("headless contract", [backend_probe]))
 
     created = ensure_dirs(ROOT)
     dir_probes = probe_dirs(ROOT)
@@ -309,6 +334,10 @@ def main() -> int:
     failures = [p for p in package_probes + optional_probes if p.status == FAIL]
     failures += [p for p in cuda_probes if p.status == FAIL]
     failures += [p for p in dir_probes if p.status == FAIL]
+    # WARN stays advisory; a FAIL from the headless probe has to count, which is
+    # the whole point of collecting it into a variable above.
+    if backend_probe.status == FAIL:
+        failures.append(backend_probe)
     if failures:
         print()
         print(f"FAILED: {len(failures)} check(s) did not pass:")
