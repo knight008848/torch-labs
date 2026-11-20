@@ -68,15 +68,22 @@ python -m pip install -e .     # 装齐依赖；本机已满足时是空操作
 python src/env_check.py        # 实测校验，任一项不过即退出码 1
 ```
 
-清单里是**下限不是锁版**：本机跑第二行是空操作，但换台机器重建时 pip 会挑满足下限的
-最新版。三条硬约束不在这份清单的保证范围内，重建后**必须**靠 `env_check.py` 复核：
+清单**以下限为主，torch 是唯一的例外**：它有上界（见 `pyproject.toml` 的注释）。
+2.10.0 是这张卡上唯一实测可用的版本，而"换台机器自动挑最新版"恰恰会把 8 年前的
+sm_75 挑没。其余包照常取满足下限的最新版。三条硬约束不在这份清单的保证范围内，
+重建后**必须**靠 `env_check.py` 复核：
 
-- **torch 必须是 CUDA 12.x 构建**——`env_check.py` 会拦下别的版本。同时新版 torch
-  可能不再为 sm_75 出构建，而本机是 RTX 2070 Max-Q。
+- **torch 必须是 CUDA 12.x 构建，且带 sm_75 kernel**——`env_check.py` 拦下别的
+  CUDA major；sm_75 则由其中的 matmul 探针实测：`is_available()` 返回 `True` 却
+  启动不了 kernel 的 wheel 会被判 FAIL。RTX 2070 Max-Q 正是新版 torch 逐步收缩
+  支持的那类架构，所以这条不再是"可能"，而是每次重建都会真跑一次的闸门。
 - **显存 8GB**——`batch_size` / `prefetch_factor` / `num_workers` 的上限由它定，
   任何 DataLoader 配置变更都要在报告里记录显存占用。
-- **headless**——无 GUI，可视化一律 `matplotlib` `savefig`，禁止 `cv2.imshow`
-  系列；只有真调用才会抛错，别用 `hasattr` 判断。
+- **headless 是纪律，不是事实**——本机 WSLg 在运行，`DISPLAY` 有值，matplotlib
+  因此会选 `tkagg` 而不是 `Agg`（`env_check.py` 对此报 WARN）：`savefig` 照常可用，
+  但 `plt.show()` 会**弹窗阻塞**而不是报错，看起来像卡死。所以可视化一律
+  `matplotlib.use("Agg")` + `savefig`，禁止 `cv2.imshow` 系列；`cv2` 是 headless
+  wheel，真调用会立刻抛错，但别用 `hasattr` 判断——它照样导出那四个符号。
 
 环境细则见 `AGENTS.md` 的「环境」一节。
 
