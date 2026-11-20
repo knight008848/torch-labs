@@ -50,7 +50,12 @@ python src/env_check.py     # 实测环境；任何一项不过即退出码 1
 
 ### Headless 与显存
 
-无 GUI。可视化一律 matplotlib `savefig`。
+⚠️ **本机其实有 GUI**：WSLg 在运行（`DISPLAY=:0`、`WAYLAND_DISPLAY` 有值、tkinter
+8.6 可用），matplotlib 因此自动选 `tkagg` 而非 `Agg`。`savefig` 不受影响，但
+`plt.show()` 会**弹窗并阻塞**——它不会报错，看起来像"跑得慢"，这是最难察觉的一种失败。
+所以 headless 是**纪律而非事实**：可视化一律先 `matplotlib.use("Agg")` 再 `savefig`。
+`env_check.py` 会把非 `Agg` 后端报成 WARN（不判 FAIL：管道本身不受影响）。
+
 `batch_size` / `prefetch_factor` / `num_workers` 受 8GB 显存约束，
 任何 DataLoader 配置变更都要在报告里记录显存占用。
 
