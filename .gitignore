@@ -33,3 +33,11 @@ desktop.ini
 # NOTE: if shared agent definitions (.claude/agents/) are ever added, place a
 # negation rule for them above this line -- see dsh-skills-deepdive.
 .claude/
+
+# Agent working memory -- local scratch, not part of the project record.
+# Append-only: every conversation appends a section, so tracking it puts one
+# commit per session into the log for content that answers "what did the agent
+# think today" rather than "how did the project change". Durable conclusions
+# belong in docs/ (environment and defects in docs/env_notes.md, learning
+# progress in docs/progress.md, mistakes in docs/error_log.md).
+.workbuddy/
