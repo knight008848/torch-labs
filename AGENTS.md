@@ -119,11 +119,12 @@ HEAD 前移，下一次 `read-tree HEAD` 自动带上刚才那个提交。
 torch-labs/
 ├── AGENTS.md            # 本文件（权威指令）
 ├── CLAUDE.md            # 一行指针，@ 导入 AGENTS.md
-├── docs/                # 计划、图谱、编号、进度、错题、报告
+├── docs/                # 计划、图谱、编号、进度、错题、运维、报告
 │   ├── 00_LEARNING_PLAN.md   # 30 天主计划（唯一权威路线）
 │   ├── knowledge_graph.md    # 枢纽图谱（骨架）
 │   ├── domain_map.md         # 概念编号（T/G/M/D/P/X）
 │   ├── dataset_spec.md       # HDF5 结构与规格（切片唯一依据）
+│   ├── env_notes.md          # 环境运维与已知缺陷（换机器/重建前必读）
 │   ├── progress.md / error_log.md / daily_template.md
 │   ├── figs/                 # savefig 落图处（纳入版控，报告要引用）
 │   └── BENCHMARK.md / REPORT.md   # Day 27 / Day 29 产出
