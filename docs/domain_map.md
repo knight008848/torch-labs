@@ -73,7 +73,7 @@
 |:---|:---|:---|:---|
 | X01 | OpenCV 读图 | `imread` + `cvtColor`，仅作 BGR/RGB 对照 | Day 13 |
 | X02 | pandas 记录 | 压测结果存表、算中位数 | Day 26 |
-| X03 | matplotlib headless | `savefig` 替代 `imshow`（本环境无 GUI） | Day 9 |
+| X03 | matplotlib headless | `savefig` 替代 `imshow`（headless 是纪律：WSLg 其实有 GUI，`plt.show()` 会静默阻塞） | Day 9 |
 | X04 | pathlib | 所有路径用 `Path` 拼接 | Day 1 |
 
 ---
