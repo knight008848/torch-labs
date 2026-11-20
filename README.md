@@ -65,7 +65,7 @@ WSL 的 conda 环境可以更好的发挥 torch 的全部性能，依赖清单�
 ```bash
 source ~/miniforge3/bin/activate embodied_ai
 python -m pip install -e .     # 装齐依赖；本机已满足时是空操作
-python src/env_check.py        # 实测校验，任一项不过即退出码 1
+python src/env_check.py        # 实测校验，任一 FAIL 即退出码 1（WARN 只提示）
 ```
 
 清单**以下限为主，torch 是唯一的例外**：它有上界（见 `pyproject.toml` 的注释）。
