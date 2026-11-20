@@ -36,11 +36,22 @@ dependencies = [
     # dist-info is plain `torch-2.10.0`, with no pip index configured on this
     # box. Adding download.pytorch.org here would only re-introduce a second
     # wheel source that can disagree with the first.
-    "torch>=2.10",
+    #
+    # The upper bound is a deliberate exception to the "floors, not pins" rule
+    # stated above. 2.10.0 is the only version ever measured on this card
+    # (RTX 2070, sm_75, Turing, 2018). A newer wheel that drops sm_75 still
+    # answers is_available() == True and fails only when a kernel launches --
+    # so a blind `pip install -e .` on a fresh box could land on a build that
+    # looks healthy and dies on day 25, mid-benchmark. Raising this bound is a
+    # two-step operation: bump the number, then run src/env_check.py, whose
+    # matmul probe is the gate that actually decides whether the new wheel runs
+    # here. Change one without the other and the bound becomes a lie.
+    "torch>=2.10,<2.11",
     # Not imported by any script yet -- declared because AGENTS.md counts it
-    # part of the environment, in anticipation of image transforms. Note the
-    # two floors are independent here, but torchvision pins to a specific torch
-    # minor; on a fresh box they can resolve to an incompatible pair.
+    # part of the environment, in anticipation of image transforms. Its own
+    # metadata pins torch exactly (`torch (==2.10.0)`), so pip cannot resolve
+    # the pair to an incompatible combination; the torch bound above is what
+    # keeps both on a build this card can actually execute.
     "torchvision>=0.25",
     "numpy>=2.2",                 # 2.x ABI is what torch is built against; 2.2 is the verified version
     "h5py>=3.16",
