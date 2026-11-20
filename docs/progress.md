@@ -48,8 +48,11 @@
 - **升级决定：不升**。torch 2.10.0 vs PyPI 2.14.1，落后 4 个 minor；理由与代价见
   `env_notes.md` 第 1 节。
 
-**未完成（不阻塞 Day 2，但 Day 16 前必须解决）**：`data/raw/teleop_demo.hdf5` 仍是
-Mock；`data/raw/test/` 残留 248 MB 待清理。
+**数据现状（不阻塞 Day 2，Day 16 前须换真数据）**：`data/raw/teleop_demo.hdf5` 是 Mock
+（5700 帧、6 demo、结构 100% 对齐 spec）。`data/raw/test/` 的三个 247 MB 文件经实测**不是垃圾**，
+是真 robomimic Lift 数据的三个格式版本——`v141` 与 `v15` 数组内容逐元素相等（可删其一省 102 MB），
+`test.hdf5` 的 `total=9666` 与实际 531 帧不符（陈旧属性，留作反例）。出处、差异与处置
+全部记入 `env_notes.md` 第 6 节，因为 `data/` 不入库，那份文档是唯一记录。
 
 ---
 
