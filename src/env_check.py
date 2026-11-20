@@ -32,7 +32,22 @@ ROOT = Path(__file__).resolve().parents[1]
 # treats the environment as incomplete until it is present. It is not *used*
 # until Day 13 (BGR/RGB comparison), but a missing cv2 on Day 1 is a real
 # deviation from the day's acceptance criteria, so it should fail loudly.
-REQUIRED_PACKAGES = ("torch", "numpy", "h5py", "pandas", "matplotlib", "cv2")
+#
+# torchvision is here for a subtler reason. Its metadata pins torch to an exact
+# version (`torch (==2.10.0)`), so the pair cannot drift on its own -- but a
+# half-finished upgrade leaves torch new and torchvision old, and that surfaces
+# as "operator torchvision::nms does not exist" at import time. A Day-13
+# symptom for a Day-1 mistake, which is exactly what this file exists to
+# prevent.
+REQUIRED_PACKAGES = (
+    "torch",
+    "torchvision",
+    "numpy",
+    "h5py",
+    "pandas",
+    "matplotlib",
+    "cv2",
+)
 
 # Packages that may legitimately be absent without blocking the pipeline.
 OPTIONAL_PACKAGES: tuple[str, ...] = ()
@@ -143,6 +158,74 @@ def probe_cuda(torch_module) -> list[Probe]:
     ]
 
 
+def probe_gpu_compute(torch_module) -> Probe:
+    """Launch one real matmul on the GPU and check the result.
+
+    cuda.is_available() only proves the driver can see a device. It says
+    nothing about whether *this wheel* carries kernels for the GPU's compute
+    capability: a build that dropped sm_75 still answers True, and only fails
+    once a kernel is actually launched. `pyproject.toml` warns that newer torch
+    builds may drop sm_75; this probe is the gate that enforces that warning,
+    because a comment cannot fail a build.
+
+    All-ones input keeps the expected value exact in float32 -- every element
+    of ones @ ones is the inner dimension, an integer well inside the 24-bit
+    mantissa -- so the comparison needs no tolerance. Two 256x256 float32
+    matrices cost ~512 KiB against the 8 GiB budget but still go through cuBLAS
+    rather than a scalar fallback, which is what makes this a real test.
+    """
+    if not torch_module.cuda.is_available():
+        return Probe("gpu compute (matmul)", FAIL, "skipped - no usable GPU")
+
+    size = 256
+    try:
+        ones = torch_module.ones(
+            (size, size), device="cuda", dtype=torch_module.float32
+        )
+        product = ones @ ones
+        exact = bool((product == float(size)).all().item())
+        total = float(product.sum().item())
+    except Exception as exc:
+        # "no kernel image is available for execution on the device" arrives
+        # here as RuntimeError; driver and cuBLAS faults arrive as OSError or
+        # RuntimeError too. All of them mean the same thing: this wheel cannot
+        # run on this card.
+        return Probe("gpu compute (matmul)", FAIL, f"raised {exc!r}")
+
+    if not exact:
+        return Probe("gpu compute (matmul)", FAIL, f"wrong result, sum={total!r}")
+    return Probe("gpu compute (matmul)", OK, f"{size}x{size} fp32, sum={total:.0f}")
+
+
+def probe_matplotlib_backend() -> Probe:
+    """Report the matplotlib backend, flagging GUI ones.
+
+    This box runs WSLg, so DISPLAY is set and matplotlib picks tkagg instead of
+    Agg. savefig still works -- it never needs a display -- but plt.show()
+    opens a window and blocks until that window is closed, which reads as a
+    hang rather than as an error. cv2's headless wheel fails loudly on the same
+    kind of mistake; matplotlib's GUI fallback fails silently, and silent is
+    the worse of the two.
+
+    WARN, not FAIL: the pipeline itself is unaffected, and failing the whole
+    check over a warning that one line in each plotting script prevents would
+    block a day for no reason.
+    """
+    try:
+        import matplotlib
+    except Exception as exc:
+        return Probe("matplotlib backend", FAIL, f"import failed: {exc!r}")
+
+    backend = matplotlib.get_backend()
+    if backend.lower() == "agg":
+        return Probe("matplotlib backend", OK, backend)
+    return Probe(
+        "matplotlib backend",
+        WARN,
+        f"{backend} (GUI; call matplotlib.use('Agg') before importing pyplot)",
+    )
+
+
 def ensure_dirs(root: Path) -> list[Path]:
     """Create the project skeleton if absent. Idempotent; returns what it made."""
     created: list[Path] = []
@@ -200,10 +283,17 @@ def main() -> int:
         import torch
 
         cuda_probes = probe_cuda(torch)
+        # Appended after the device report so a reader sees "which GPU" before
+        # "can it compute". The probe degrades to FAIL with its own reason when
+        # cuda is unusable, so it is safe to call unconditionally here.
+        cuda_probes.append(probe_gpu_compute(torch))
     else:
         cuda_probes = [Probe("cuda", FAIL, "skipped - torch itself is unavailable")]
     print()
     print(format_report("cuda", cuda_probes))
+
+    print()
+    print(format_report("headless contract", [probe_matplotlib_backend()]))
 
     created = ensure_dirs(ROOT)
     dir_probes = probe_dirs(ROOT)
