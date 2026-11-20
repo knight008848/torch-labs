@@ -65,22 +65,28 @@ fatal: unable to access 'https://github.com/...': Failed to connect to github.co
 | 来源 | 值 | 状态 |
 |:---|:---|:---|
 | `git config http.proxy` | `http://127.0.0.1:7897`（Clash 默认端口） | **常不启动** |
-| 环境变量 `https_proxy` | `http://127.0.0.1:11640` | 活的 |
+| 环境变量 `https_proxy` | `http://127.0.0.1:11114`（举例） | **活着，但端口每次会话都可能变** |
 
 git 优先读自己的 config，于是走了死的那个。**这是配置漂移，不是网络故障。**
 
-**可用的推送命令**（临时覆盖 git 的代理配置）：
+⚠️ **不要硬编码代理端口**。环境变量的值是宿主每次注入的，同一天里 11640、11114 都出现过。
+任何写死端口的命令都会在下次失效。**永远引用 `$https_proxy`。**
+
+**可用的推送命令**：
 
 ```bash
-GIT_TERMINAL_PROMPT=0 git -c http.proxy=http://127.0.0.1:11640 \
-  -c https.proxy=http://127.0.0.1:11640 push origin main
+GIT_TERMINAL_PROMPT=0 git -c http.proxy="$https_proxy" \
+  -c https.proxy="$https_proxy" push origin main
 ```
 
-- 直连（`curl --noproxy '*'`）也能通，但约 15 s；走 11640 更快。
+- 走代理实测约 18 s；直连（`curl --noproxy '*'`）有时更快，有时超时（`exit 124`），不可依赖。
+- 判断当前代理是否可用，先跑一句：
+  `curl -s -o /dev/null -w "%{http_code}\n" -x "$https_proxy" https://github.com`，期望 `200`。
 - 无 `credential.helper` 配置，凭据由 Git Credential Manager
   （`C:\Program Files\Git\mingw64\bin\`）存在 Windows 凭据管理器里。
 - `GIT_TERMINAL_PROMPT=0` 是为了让认证失败时**立刻报错**而不是挂住等输入。
-- 长期解法：把 `git config --global http.proxy` 那条改掉，或加 `--unset`。改之前先确认哪个端口活着。
+- 长期解法：`git config --global --unset http.proxy`（让它跟随环境变量），
+  而不是把 7897 改成另一个会变的端口。
 
 ---
 
