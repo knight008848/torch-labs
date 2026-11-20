@@ -138,4 +138,82 @@ headless 探针的 FAIL 只 print 未计入 `failures`。**两个都在「正向
 | P1 | 所有 `day_NN` 的 `main()` | 末尾硬编码 `>>> Day XX Acceptance: ALL PASS`；`day_15` 数据缺失时只 print 警告后 `return`（退出码 0）。后 27 天 assert 密度远低于 Day 1，「失败的运行必须响」名存实亡 |
 | P2 | `docs/domain_map.md` | 缺 B 类编号表（B01-B05 只定义在 `knowledge_graph.md`）；M3 说 Day 13 交付 v0.1 但逐日表是 Day 12，M5 说 Day 24 交付 v0.5 但版本序列只到 v0.4 |
 
-**另**：`data/raw/test/` 残留三个 HDF5 共约 248 MB，无归属说明，可清理（不在版控内）。
+---
+
+## 6. 数据文件
+
+`data/` 全部在 `.gitignore` 内（体积大、可重建、不入库）。**因此本文是它们唯一的出处记录**——
+文件一旦丢失，除重新下载外没有恢复依据。2026-11-20 逐项实测。
+
+### 6.1 `data/raw/teleop_demo.hdf5` —— Mock（116 MB）
+
+由 Day 1 生成，`attrs` 自带来源标记，可自证身份：
+
+```
+synthetic = True
+generator = experiments/day_01_env_and_data.py
+seed      = 20260911
+note      = stand-in for robomimic lift/ph image.hdf5
+```
+
+结构 100% 对齐 `dataset_spec.md`：`data/demo_N/obs/agentview_image` 为 `uint8 [N,84,84,3]`
+（`chunks=(1,84,84,3)`），`robot0_joint_pos` 与 `actions` 为 `float64 [N,7]`，三键 N 全部对齐。
+
+```
+demo_0  900   demo_1 1000   demo_2 1100
+demo_3 1200   demo_4  800   demo_5  700      total = 5700 帧
+```
+
+**颜色是刻意选的判据**：红块 `(220,40,40)` 占 2.0%，蓝底 `(30,87,200)` 占 1.5%。
+通道序一反转，红蓝立刻互换，**肉眼即可判定**，比打印数字可靠——这是 Day 13 BGR/RGB 对照的判据来源。
+
+**三条必须知道的局限**：
+
+1. **六个 demo 的视觉内容几乎是同一段。** 方块都从 `(51.5, 7.5)` 匀速走到 `(51.5, 75.5)`，
+   帧数不同而已；图像间最大差异 16/255，来自背景渐变噪声。**不是六段不同演示。**
+2. **数值模态倒是独立的。** `actions` / `joint_pos` 各自随机生成，`demo_5` 不是 `demo_0` 的前缀切片。
+3. **图像与动作无因果关系。** 方块按帧号自己横移，`actions` 是噪声。想验证「动作是否驱动画面」，
+   Mock 给不出答案——Day 22-26 不需要这个，真需要时只能换真数据。
+
+适用边界：Day 2-14 完全够用；Day 15 懒加载实验成立（`chunks` 已按单帧切好）；
+**Day 16 必须换真数据**（缺 `mask/` 组与 `env_args` 属性）。
+
+### 6.2 `data/raw/test/` —— 真 robomimic Lift（3 个版本，247 MB）
+
+三个文件是**同一份数据的三个格式版本**，`env_name: "Lift"`，10 个 demo，帧数分布一致：
+
+```
+[59, 58, 57, 55, 51, 58, 49, 49, 44, 51] = 531 帧
+mask/train = demo_1,2,3,5,6,7,9     mask/valid = demo_0,4,8
+```
+
+| 文件 | `env_version` | obs 键 | depth | `total` 属性 | 实际帧数 | 大小 |
+|:---|:---|:---|:---|:---|:---|:---|
+| `test.hdf5` | **缺失**（旧格式） | 13 | ❌ | **9666** ← 假 | 531 | 44 MB |
+| `test_v141.hdf5` | `1.4.1` | 15 | ✅ | 531 | 531 | 102 MB |
+| `test_v15.hdf5` | `1.5.1` | 15 | ✅ | 531 | 531 | 102 MB |
+
+**`v141` 与 `v15` 的数组内容完全一致**——抽查 `demo_0` / `demo_9` 的 `actions`、`agentview_image`、
+`object` 六个组合，`max|diff| = 0`，形状也相同。**但两个文件不是字节级相同**（101.2 vs 101.6 MB）：
+差异全部在 `env_args` 的版本标记里，数据本身是同一份。**约 102 MB 纯冗余。**
+
+**`test.hdf5` 的 `total = 9666` 是错的**，实际只有 531 行 `actions`，差 18 倍（裁剪时留下的陈旧属性）。
+这条比数据本身更值得记：**它是 Day 1「自洽 ≠ 正确」错题的活标本**——`attrs["total"]` 看起来权威得像
+spec，实际与 `len(actions)` 对不上。`Dataset.__len__` 若照它写，会凭空多出 9135 个不存在的样本。
+**写 `__len__` 一律数实际行数，不读元数据。**
+
+**`test.hdf5` 与另两个的图像不同**：`actions`/`states`/`joint_pos` 全等，但 `agentview_image`
+`max|diff| = 215`。同一轨迹、渲染结果不同——旧格式到 `1.4.1` 之间渲染管线变了（旧文件的
+`env_version` 缺失，无法确定具体版本，所以这是推断而非结论）。不是数据损坏，
+但**别拿它做像素级对照的基准**。
+
+真实 Lift 的画面是**白色桌面 + 木色方块**（主色 `[252 251 247]`），与 Mock 的饱和蓝完全是两个世界。
+这解释了 Day 13 那条边界：Mock 是纯色块、判据强；真图是渐变加光照、判据弱。两者**不能互相推断**
+通道序，只能各自验证各自的转换逻辑。
+
+Day 15 探针会看到 13-15 个 obs 键（`agentview_depth`、`robot0_eef_pos/quat/vel`、`gripper_qpos/qvel`、
+`joint_pos_cos/sin` …），而 spec 只取用 3 个。**看到多余键不算文件损坏**，按 spec 验收即可。
+
+**处置**：`test_v141.hdf5` 与 `test_v15.hdf5` 重复，可删其一省 102 MB。
+`test.hdf5` 建议保留——它带着两个别处拿不到的对照价值：`total=9666` 这个活体反例，
+以及「同轨迹不同渲染」的跨版本差异。删任何文件前先确认 Day 16 用的是哪一份。
