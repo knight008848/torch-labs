@@ -1,5 +1,5 @@
 """
-Day 02 / 2026-09-12 / Tensor trinity: dtype, shape, and device
+Day 02 / 2026-11-24 / Tensor trinity: dtype, shape, and device
 Runtime: <fill in after completion>
 
 Goal:
@@ -51,11 +51,11 @@ def create_five_dtypes() -> dict[str, torch.Tensor]:
         Hint: Use torch.tensor([...], dtype=torch.<type>)
     """
     # --- [TODO: Student Implementation Start] ---
-    t_f32 = torch.tensor([1., 2., 3.])
+    t_f32 = torch.tensor([1., 2., 3.], dtype=torch.float32)
     t_f64 = torch.tensor([1., 2., 3.], dtype=torch.float64)
-    t_i32 = torch.tensor([1., 2., 3.], dtype=torch.int32)
-    t_i64 = torch.tensor([1., 2., 3.], dtype=torch.int64)
-    t_u8 = torch.tensor([1., 2., 3.], dtype=torch.uint8)
+    t_i32 = torch.tensor([1, 2, 3], dtype=torch.int32)
+    t_i64 = torch.tensor([1, 2, 3], dtype=torch.int64)
+    t_u8 = torch.tensor([1, 2, 3], dtype=torch.uint8)
 
     # --- [TODO: Student Implementation End] ---
 
@@ -113,7 +113,8 @@ def calculate_image_memory_footprint(
     num_elements = batch_size * channels * height * width
 
     # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError("Step 3: Calculate uint8 and float32 byte counts")
+    uint8_bytes = num_elements * 1
+    float32_bytes = num_elements * 4
     # --- [TODO: Student Implementation End] ---
 
     assert float32_bytes == uint8_bytes * 4, "Float32 must consume exactly 4x the memory of uint8"
@@ -134,7 +135,11 @@ def demonstrate_numpy_memory_sharing() -> None:
     np_arr = np.array([10.0, 20.0, 30.0], dtype=np.float32)
 
     # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError("Step 4: Demonstrate zero-copy memory sharing and clone independence")
+    shared_tensor = torch.from_numpy(np_arr)
+    cloned_tensor = shared_tensor.clone()
+
+    np_arr[0] = 999.0
+    shared_tensor[1] = 888.0
     # --- [TODO: Student Implementation End] ---
 
     assert np_arr.ctypes.data == shared_tensor.data_ptr(), "Pointers must match for zero-copy!"
@@ -153,7 +158,8 @@ def demonstrate_boundary_uint8_wrap() -> tuple[int, int]:
         Return (overflow_val, underflow_val).
     """
     # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError("Step 5: Demonstrate uint8 overflow (255+1) and underflow (0-1)")
+    overflow_val = (torch.tensor([255], dtype=torch.uint8) + torch.tensor([1], dtype=torch.uint8)).item()
+    underflow_val = (torch.tensor([0], dtype=torch.uint8) - torch.tensor([1], dtype=torch.uint8)).item()
     # --- [TODO: Student Implementation End] ---
 
     assert overflow_val == 0, f"Expected 255 + 1 = 0 in uint8, got {overflow_val}"
