@@ -114,7 +114,9 @@ def synth_frame(rng: np.random.Generator, step: int, n_frames: int) -> np.ndarra
     frame[..., 2] = 200
 
     dither = rng.integers(-8, 9, size=(height, width, 1), dtype=np.int16)
-    frame[..., 1] = np.clip(frame[..., 1].astype(np.int16) + dither[..., 0], 0, 255).astype(np.uint8)
+    frame[..., 1] = np.clip(
+        frame[..., 1].astype(np.int16) + dither[..., 0], 0, 255
+    ).astype(np.uint8)
 
     # Cube: solid red, travelling horizontally over the episode.
     progress = step / max(n_frames - 1, 1)
