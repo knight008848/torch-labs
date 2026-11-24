@@ -284,7 +284,7 @@ def format_report(title: str, probes: list[Probe]) -> str:
 
 def main() -> int:
     """Entry point. Returns a process exit code rather than calling sys.exit."""
-    print(f"torch-labs environment check")
+    print("torch-labs environment check")
     print(f"project root : {ROOT}")
     print(f"interpreter  : {sys.executable}")
     print(f"python       : {sys.version.split()[0]}")
