@@ -10,11 +10,11 @@
 
 | 项 | 值 |
 |:---|:---|
-| 当前 Day | 1（2026-09-11） |
+| 当前 Day | 2（2026-11-24） |
 | 当前周 | W1 地基 I：Tensor 与 autograd |
 | 当前里程碑 | M1 已达成，M2 待办（Day 7 周测） |
-| 累计投入 | 0.5 h |
-| 本周投入 | 0.5 h / 20 h |
+| 累计投入 | 1.5 h |
+| 本周投入 | 1.5 h / 20 h |
 
 > 维护与复核不计入学习时长。下方「复工复核」记录了 09-11 之后的这次环境重验。
 
@@ -72,7 +72,7 @@
 ### 📌 W1（Day 1-7）｜地基 I：Tensor 与 autograd
 
 - [x] **Day 1** 环境奠基与数据落地 ｜ 交付：`day_01_env_and_data.py`、`src/env_check.py` ｜ 耗时：0.5 h
-- [ ] **Day 2** Tensor 三要素 dtype/shape/device ｜ 交付：`day_02_tensor_basics.py` ｜ 耗时：__
+- [x] **Day 2** Tensor 三要素 dtype/shape/device ｜ 交付：`day_02_tensor_basics.py` ｜ 耗时：1 h
 - [ ] **Day 3** 形状手术 view/reshape/permute ｜ 交付：`day_03_shape_ops.py` ｜ 耗时：__
 - [ ] **Day 4** 索引、切片与布尔掩膜 ｜ 交付：`day_04_indexing.py` ｜ 耗时：__
 - [ ] **Day 5** 广播与 in-place 陷阱 ｜ 交付：`day_05_broadcast.py` ｜ 耗时：__
@@ -81,7 +81,7 @@
 
 **W1 复盘**
 
-> Day 1 增量（Day 7 时再终稿）：
+> Day 1-2 增量（Day 7 时再终稿）：
 
 - 完成事项（Day 1）：`src/env_check.py` 通过（含 `torch built for CUDA 12.8` 实测校验）；
   `data/raw/teleop_demo.hdf5` 落地（6 demo / 5700 帧 / 116.1 MiB，
@@ -98,7 +98,32 @@
      不影响 Day 2-14（Mock 结构等价），但 **Day 16 之前必须解决**
   2. **Mock 是 RGB 按构造写的**，`channel_order` 属性已显式标注。这是个便利也是一个陷阱：
      Day 13 在 Mock 上做的通道序实验**不能推断真实数据**，真判定仍留 Day 16
+
+**Day 2 增量（2026-11-24）**
+
+- 完成事项（Day 2）：`day_02_tensor_basics.py` 六个 Step 全通，`exit=0`，6.9 s。
+  五 dtype 构造 / CPU↔CUDA 往返（`torch.equal` 校验值不变）/ uint8 与 float32 的字节比
+  `1,354,752 : 5,419,008`（4.0x）/ `from_numpy` 零拷贝 + `clone` 独立性
+  （双向改写验证，非只比 `data_ptr`）/ uint8 运算期回绕 `255+1=0`、`0-1=255` /
+  从 Mock HDF5 取真切片 `[84,84,3] uint8` 与 `[7] float64`
+- 做错的练习及分析（记入 `error_log.md`）：Day 2 三条——**A×2、K×1**
+  ① 五个变量四个用浮点字面量，其中两个「碰巧对」（K：依赖默认 dtype）；
+  ② `element_size()` 问 dtype 报 `AttributeError`，改对后又多乘一个 4，
+  **而断言照样通过**（A：断言只校验比值，不校验量级）；
+  ③ 零拷贝演示后先把值改回去再断言（A：函数产物就是改动后的状态）
+- 新发现的薄弱点：
+  1. **断言设计**——今天两次被「空洞断言」放过（比值对、量级错）。
+     `assert` 只钉相对关系时，绝对量级无人把关。往后凡是能量出绝对值的，
+     都要再配一条钉死量级的断言
+  2. **K 类累计 3 次**，三次同属一个家族：「文档 / 默认值被当成了权威」。
+     已按规则 7 排变体练习进 Day 3（先预测 `is_contiguous()` 与 `view` 是否报错，再执行）
+  3. **`chunks` 差异未记录**：Mock 是 `chunks=(1,84,84,3)`，真 Lift 数据是 `chunks=None`
+     （连续存储）。Day 15 的分块/懒加载实验只在 Mock 上成立，需提前知情
+- 下一步计划（Day 3）：形状手术 `view`/`reshape`/`permute`（T04），
+  素材继续用 `[N,84,84,3]`；顺带做 K 类变体练习
+
 - 复述检验①（Tensor 与 NumPy 的关系）是否流畅：Day 7 执行
+
 - 下一步计划（Day 2）：Tensor 三要素 dtype/shape/device（T01 T02 T03 B01），
   练习素材直接用今天落地的 `[N,84,84,3] uint8` 与 `[N,7] float64`
 
@@ -180,7 +205,9 @@
 
 | 概念编号 | 概念 | 出错次数 | 是否已补习 | 备注 |
 |:---|:---|:---|:---|:---|
-| — | — | — | — | — |
+| T02 | dtype（默认推断 vs 显式声明） | 1（K） | 否 | 五个变量两个「碰巧对」；Day 3 变体练习 |
+| T02 | `element_size` 的单位 | 1（A） | 否 | 多乘 4 且断言未拦住；配绝对量级断言 |
+| B01 | `from_numpy` 零拷贝的验证顺序 | 1（A） | 否 | 断言前把值改回去；断言永远在最后 |
 
 ---
 
