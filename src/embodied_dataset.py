@@ -15,10 +15,9 @@ Constraints & Iron Rules:
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable
+from typing import Callable
 
 import h5py
-import numpy as np
 import torch
 from torch.utils.data import Dataset
 
@@ -73,7 +72,8 @@ class EmbodiedDataset(Dataset[dict[str, torch.Tensor]]):
             3. Lazily open h5py.File if self._file is None.
             4. Read raw observation, state, and action slice for this single frame.
             5. Convert NumPy arrays to PyTorch tensors.
-            6. Return dictionary {'image': image_tensor, 'state': state_tensor, 'action': action_tensor}.
+            6. Return a dict {'image': image_tensor, 'state': state_tensor,
+               'action': action_tensor}.
         """
         # --- [TODO: Student Implementation Start] ---
         raise NotImplementedError("v0.1: Lazily read frame slice and return multimodal dict")
