@@ -69,6 +69,26 @@ dependencies = [
     "opencv-python-headless>=5.0",
 ]
 
+# Dev-only tooling. `pip install -e ".[dev]"` adds it; the plain install above
+# stays runtime-only so a learner's environment is not widened by a linter.
+# ruff is a single static binary with no dependencies of its own -- it cannot
+# perturb the torch/torchvision pair, which is the only thing here that matters.
+[project.optional-dependencies]
+dev = ["ruff>=0.17"]             # 0.17.6 verified; floor because the rule set is stable
+
+# Lint standard. Pinned here so an editor and a terminal agree on the same
+# answers; verified green on day_01, day_02 and src/ as of 2026-11-24.
+# The 27 unwritten scaffolds still report F821 (undefined-name) because their
+# bodies only reference names that appear after the TODO is filled in -- that
+# count drops to zero as each day is implemented, so it is not a gate failure
+# to act on. Day 2's file is the reference: it passes with zero findings.
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# pycodestyle errors + line length, pyflakes, and trailing-whitespace warnings.
+select = ["E4", "E5", "E7", "E9", "F", "W"]
+
 # The repo is a collection of scripts run by path (`python src/env_check.py`),
 # not an importable package -- src/ has no __init__.py. Declaring no packages
 # keeps `pip install -e .` usable purely as a dependency installer.
