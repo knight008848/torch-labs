@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 import torch
@@ -41,7 +40,9 @@ class MinMaxNormalizer:
 
         # Detect degenerate zero-range dimensions
         self.range_vals = self.max_vals - self.min_vals
-        self.range_vals = torch.where(self.range_vals < self.eps, torch.tensor(1.0), self.range_vals)
+        self.range_vals = torch.where(
+            self.range_vals < self.eps, torch.tensor(1.0), self.range_vals
+        )
 
     def normalize(self, x: torch.Tensor) -> torch.Tensor:
         """Normalize x from [min_vals, max_vals] to [-1.0, 1.0].
