@@ -51,7 +51,12 @@ def create_five_dtypes() -> dict[str, torch.Tensor]:
         Hint: Use torch.tensor([...], dtype=torch.<type>)
     """
     # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError("Step 1: Construct tensors for float32, float64, int32, int64, uint8")
+    t_f32 = torch.tensor([1., 2., 3.])
+    t_f64 = torch.tensor([1., 2., 3.], dtype=torch.float64)
+    t_i32 = torch.tensor([1., 2., 3.], dtype=torch.int32)
+    t_i64 = torch.tensor([1., 2., 3.], dtype=torch.int64)
+    t_u8 = torch.tensor([1., 2., 3.], dtype=torch.uint8)
+
     # --- [TODO: Student Implementation End] ---
 
     # Acceptance verification
@@ -83,7 +88,9 @@ def cpu_cuda_cpu_roundtrip(tensor_cpu: torch.Tensor) -> torch.Tensor:
         raise RuntimeError("CUDA is required per AGENTS.md hardware specification")
 
     # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError("Step 2: Implement CPU -> CUDA:0 -> CPU roundtrip")
+    tensor_gpu = tensor_cpu.to(torch.device("cuda:0"))
+    tensor_back_cpu = tensor_gpu.to("cpu")
+    
     # --- [TODO: Student Implementation End] ---
 
     assert tensor_gpu.device.type == "cuda"
