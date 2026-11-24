@@ -1,6 +1,6 @@
 """
 Day 02 / 2026-11-24 / Tensor trinity: dtype, shape, and device
-Runtime: <fill in after completion>
+Runtime: 1 h
 
 Goal:
     Master the three fundamental pillars of PyTorch Tensors (dtype, shape, device)
