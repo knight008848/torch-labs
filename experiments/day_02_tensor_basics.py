@@ -179,7 +179,11 @@ def load_real_hdf5_slice() -> tuple[torch.Tensor, torch.Tensor]:
         raise FileNotFoundError(f"Missing {DATA_PATH}. Run experiments/day_01_env_and_data.py first.")
 
     # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError("Step 6: Read first frame image and action from teleop_demo.hdf5")
+    with h5py.File(DATA_PATH, "r") as f:
+        img = f["data/demo_0/obs/agentview_image"][0]
+        action = f["data/demo_0/actions"][0]
+        img_tensor = torch.from_numpy(img)
+        action_tensor = torch.from_numpy(action)
     # --- [TODO: Student Implementation End] ---
 
     assert img_tensor.dtype == torch.uint8 and img_tensor.shape == (84, 84, 3)
