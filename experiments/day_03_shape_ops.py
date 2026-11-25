@@ -1,6 +1,6 @@
 """
 Day 03 / 2026-11-25 / Shape operations: view, reshape, permute, and contiguity
-Runtime: <fill in after completion>
+Runtime: 4.1 s
 
 Goal:
     Master tensor shape manipulation (view vs reshape vs permute), understand
