@@ -36,6 +36,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -67,8 +68,9 @@ def permute_hwc_to_chw(img_hwc: torch.Tensor) -> torch.Tensor:
     img_chw = img_hwc.permute(2, 0, 1)
     # --- [TODO: Student Implementation End] ---
 
-    expected_shape = (3, img_hwc.shape[0], img_hwc.shape[1])
-    assert img_chw.shape == expected_shape, f"Expected CHW, got {img_chw.shape}"
+    expected_shape = (img_hwc.shape[2], img_hwc.shape[0], img_hwc.shape[1])
+    if img_chw.shape != expected_shape:
+        raise ValueError(f"Expected CHW {expected_shape}, got {img_chw.shape}")
     return img_chw
 
 
@@ -80,9 +82,9 @@ def investigate_contiguity_and_view(img_hwc: torch.Tensor) -> None:
         2. Create permuted = img_hwc.permute(2, 0, 1).
         3. Assert permuted.is_contiguous() is False.
         4. In a try/except RuntimeError block, attempt permuted.view(-1) and catch the error.
-           (Careful: permuted.view(3, -1) SUCCEEDS here -- the C axis is the outermost stride-1
-           block, so flattening only the trailing H, W dims is legal.)
-        5. Verify that permuted.contiguous().view(-1) and permuted.reshape(-1) succeed.
+        5. Prove the counterpart: permuted.view(3, -1) does NOT raise -- the C axis is the
+           outermost stride-1 block, so merging only H and W is legal. Check its stride.
+        6. Verify that permuted.contiguous().view(-1) and permuted.reshape(-1) succeed.
     """
     # --- [TODO: Student Implementation Start] ---
     assert img_hwc.is_contiguous(), "Input tensor must be contiguous"
@@ -95,6 +97,18 @@ def investigate_contiguity_and_view(img_hwc: torch.Tensor) -> None:
         print(f"  [Step 2 & 3] caught: {str(e).splitlines()[0]}")
     else:
         raise ValueError("view(-1) should raise RuntimeError on non-contiguous tensor")
+
+    # view() only merges stride-compatible neighbours, so this partial flatten is legal.
+    channels = img_hwc.shape[2]
+    view3 = permuted.view(channels, -1)
+    if view3.shape != (channels, img_hwc.numel() // channels):
+        raise ValueError(f"unexpected view shape {view3.shape}")
+    assert view3.stride() == (1, channels), f"unexpected view stride {view3.stride()}"
+    assert torch.equal(view3, permuted.reshape(channels, -1)), (
+        f"view({channels}, -1) disagrees with reshape"
+    )
+    print(f"  [Step 2 & 3] view({channels}, -1) survived: stride={view3.stride()}")
+
     permuted_flat = permuted.contiguous().view(-1)
     permuted_reshaped = permuted.reshape(-1)
     assert torch.equal(permuted_flat, permuted_reshaped), (
