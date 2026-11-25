@@ -71,6 +71,7 @@ def permute_hwc_to_chw(img_hwc: torch.Tensor) -> torch.Tensor:
     expected_shape = (img_hwc.shape[2], img_hwc.shape[0], img_hwc.shape[1])
     if img_chw.shape != expected_shape:
         raise ValueError(f"Expected CHW {expected_shape}, got {img_chw.shape}")
+    assert img_chw.stride() != img_hwc.stride(), "permute must reorder the strides"
     return img_chw
 
 
@@ -87,6 +88,9 @@ def investigate_contiguity_and_view(img_hwc: torch.Tensor) -> None:
         6. Verify that permuted.contiguous().view(-1) and permuted.reshape(-1) succeed.
     """
     # --- [TODO: Student Implementation Start] ---
+    channels = img_hwc.shape[2]
+    if channels < 2:
+        raise ValueError("this demo needs C >= 2: with C == 1 the permute stays contiguous")
     assert img_hwc.is_contiguous(), "Input tensor must be contiguous"
     permuted = img_hwc.permute(2, 0, 1)
     assert not permuted.is_contiguous(), "Permuted tensor must be non-contiguous"
@@ -99,7 +103,6 @@ def investigate_contiguity_and_view(img_hwc: torch.Tensor) -> None:
         raise ValueError("view(-1) should raise RuntimeError on non-contiguous tensor")
 
     # view() only merges stride-compatible neighbours, so this partial flatten is legal.
-    channels = img_hwc.shape[2]
     view3 = permuted.view(channels, -1)
     if view3.shape != (channels, img_hwc.numel() // channels):
         raise ValueError(f"unexpected view shape {view3.shape}")
