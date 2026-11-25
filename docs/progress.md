@@ -10,11 +10,11 @@
 
 | 项 | 值 |
 |:---|:---|
-| 当前 Day | 2（2026-11-24） |
+| 当前 Day | 3（2026-11-25） |
 | 当前周 | W1 地基 I：Tensor 与 autograd |
 | 当前里程碑 | M1 已达成，M2 待办（Day 7 周测） |
-| 累计投入 | 1.5 h |
-| 本周投入 | 1.5 h / 20 h |
+| 累计投入 | 2.5 h |
+| 本周投入 | 2.5 h / 20 h |
 
 > 维护与复核不计入学习时长。下方「复工复核」记录了 09-11 之后的这次环境重验。
 
@@ -73,7 +73,7 @@
 
 - [x] **Day 1** 环境奠基与数据落地 ｜ 交付：`day_01_env_and_data.py`、`src/env_check.py` ｜ 耗时：0.5 h
 - [x] **Day 2** Tensor 三要素 dtype/shape/device ｜ 交付：`day_02_tensor_basics.py` ｜ 耗时：1 h
-- [ ] **Day 3** 形状手术 view/reshape/permute ｜ 交付：`day_03_shape_ops.py` ｜ 耗时：__
+- [x] **Day 3** 形状手术 view/reshape/permute ｜ 交付：`day_03_shape_ops.py` ｜ 耗时：1 h
 - [ ] **Day 4** 索引、切片与布尔掩膜 ｜ 交付：`day_04_indexing.py` ｜ 耗时：__
 - [ ] **Day 5** 广播与 in-place 陷阱 ｜ 交付：`day_05_broadcast.py` ｜ 耗时：__
 - [ ] **Day 6** autograd 动态计算图 ｜ 交付：`day_06_autograd.py` ｜ 耗时：__
@@ -126,6 +126,40 @@
 
 - 下一步计划（Day 2）：Tensor 三要素 dtype/shape/device（T01 T02 T03 B01），
   练习素材直接用今天落地的 `[N,84,84,3] uint8` 与 `[N,7] float64`
+
+**Day 3 增量（2026-11-25）**
+
+- 完成事项（Day 3）：`day_03_shape_ops.py` 四条验收全通，`exit=0`，**4.1 s**
+  （其中约 3 s 是 `import torch` 的固定开销）。Step 1 permute HWC→CHW 得
+  `(3, 84, 84)` / stride `(1, 252, 3)`；Step 2&3 真的撞上并捕获 `view(-1)` 的
+  `RuntimeError`（消息以 `view size is not compatible` 开头），再用 `torch.equal`
+  验证 `contiguous().view(-1)` 与 `reshape(-1)` 逐元素相同；Step 4 产出
+  `docs/figs/day_03_axis_disaster.png`——左：红绿蓝三条**横**色带；右：84 条 RGB
+  循环的**竖**细纹。两张图并置后差别一眼可辨
+- 做错的练习及分析（记入 `error_log.md`）：Day 3 六条——**C×2、A×3、K×1**
+  ① `t.stride()` 答成 shape 本身，`p.stride()` 答「不知道」（C：stride 停在名词层面）
+  ② `b.T` 的 stride 答成 `(2, 1)`（C：通式「右侧 size 连乘」的前提未建立）
+  ③ `reshape` 返回视图（K：当成 `view` 的别名）
+  ④ `b.shape()` 当方法调用（A：属性/方法形态不统一）
+  ⑤ `e.message`（A：Python 2 遗留属性）
+  ⑥ `except` 分支里手写死消息，日志说 A、代码做 B（A：证据不是从异常对象取的）
+- 新发现的薄弱点：
+  1. **stride 没有具象化**是全天的主线：stride 答错 → `view` 判断失去依据 →
+     `reshape` 只能猜。三错同源，不是三个独立问题。往后凡涉及形状，**先报 stride 再动手**
+  2. **证据链**：两次「看起来对但没有证据」——手写日志、`e.message`。
+     已立硬规矩：**异常处理块里的每句话来自 `str(e)`，断言里的每个结论来自数据**
+  3. **教材本身有错**（见下）
+- 教材与讲解的缺陷（均已修，照实记）：
+  1. `day_03` 验收 3 声称 `view(3, -1)` 会抛 `RuntimeError`，**实测不抛**（返回
+     `(3, 7056)`）。`view` 只合并 stride 兼容的相邻维，不要求严格连续。docstring 已改为
+     `view(-1)`，并登记进 `env_notes.md` §5
+  2. 讲解中「stride 最后一维恒为 1」漏了前提，被当场追问推翻；`error_log.md`
+     对照表已补「连续 vs 可 view」一行
+  3. 曾用 `b.T[2][1]` 作反查样本——末元素在 `(2,1)` 与 `(1,3)` 两种假设下都是
+     offset 5，**零区分度**。已改用 `b.T[0][1]`
+- 下一步计划（Day 4）：索引、切片与布尔掩膜（T05），素材改用 Mock 的 `[N, 7]` 动作序列。
+  开场快测 Q2 正是 `actions[0:1, :]` 与 `actions[0, :]` 的维度差异——**先预测再执行**，
+  验收断言要钉住 `ndim` 而不仅是元素值
 
 ### 📌 W2（Day 8-14）｜地基 II：模块化、训练循环与数据接口
 
@@ -205,9 +239,15 @@
 
 | 概念编号 | 概念 | 出错次数 | 是否已补习 | 备注 |
 |:---|:---|:---|:---|:---|
-| T02 | dtype（默认推断 vs 显式声明） | 1（K） | 否 | 五个变量两个「碰巧对」；Day 3 变体练习 |
+| T02 | dtype（默认推断 vs 显式声明） | 1（K） | 是 | 五个变量两个「碰巧对」；Day 3 变体练习已执行，未再犯 |
 | T02 | `element_size` 的单位 | 1（A） | 否 | 多乘 4 且断言未拦住；配绝对量级断言 |
 | B01 | `from_numpy` 零拷贝的验证顺序 | 1（A） | 否 | 断言前把值改回去；断言永远在最后 |
+| T04 | **stride 是什么** | 2（C） | 是 | 答成 shape、答「不知道」；座位号类比重讲，Day 7 复验 |
+| T04 | 通式的适用前提（只在连续时成立） | 1（C） | 是 | `b.T` 答成 `(2,1)`；两条规则已分开记 |
+| T04 | `reshape` 的返回类型 | 1（K） | 是 | 当成 `view` 别名；用 `data_ptr` 判断视图/拷贝 |
+| T04 | 属性 vs 方法 | 1（A） | 是 | `b.shape()` 当方法调；判据表已给 |
+| — | Python 3 异常 API | 1（A） | 是 | `e.message` 是 Py2 遗留；统一用 `str(e)` |
+| T04 | **验证证据须取自对象** | 1（A） | 否 | 手写死消息冒充日志；硬规矩已立，待后续反复验证 |
 
 ---
 
