@@ -157,6 +157,21 @@
      对照表已补「连续 vs 可 view」一行
   3. 曾用 `b.T[2][1]` 作反查样本——末元素在 `(2,1)` 与 `(1,3)` 两种假设下都是
      offset 5，**零区分度**。已改用 `b.T[0][1]`
+- 外部资料摘录（《PyTorch Tensor 内存布局深度解析》，CSDN，2026-09-08）：
+  可读范围仅到 §2.1 标题处（VIP 截断），后续 view/reshape 内部、`contiguous` 代价、
+  `channels_last` 三节**未获取、未采信**。已读到并实测复核的三条：
+  1. **Tensor = 一块内存 + 三个元字段**（`shape` / `stride` / `storage_offset`）。
+     「元信息与数据分离，改标签比搬数据便宜」——比我们的放映厅类比更适合跨天复用，
+     Day 13 通道序、Day 20 batch 拼接都是同一件事
+  2. **`storage_offset` 是第三个元字段**（此前三天都没提）：实测 `x[1:]` 的 offset=4、
+     `x[:, 1]` 的 offset=1，二者与 `x` 共享同一 storage；`x.t()` 的 offset 仍为 0 且
+     `untyped_storage().data_ptr()` 相同 → 转置确实只换标签
+  3. **偏移公式** `off = Σ(下标_k × stride_k) + storage_offset`：实测 `p[2][5][7]`
+     = `2×1 + 5×252 + 7×3` = **1283** = `t.reshape(-1)[1283]`。以后验 stride 不必猜，
+     算 offset 再取值即可；这正好补上今天用 `b.T[0][1]` 做反查的方法论
+  另附两条量级事实（同样实测）：`permute`/`transpose` 是 **O(1)**（只动元信息），
+  触发拷贝的 `contiguous`/`reshape` 是 O(n)；`p` 的 storage 仍是 84,672 B
+  = `21168 × 4`，与 `t` 完全相同，**没有新开内存**
 - 下一步计划（Day 4）：索引、切片与布尔掩膜（T05），素材改用 Mock 的 `[N, 7]` 动作序列。
   开场快测 Q2 正是 `actions[0:1, :]` 与 `actions[0, :]` 的维度差异——**先预测再执行**，
   验收断言要钉住 `ndim` 而不仅是元素值
