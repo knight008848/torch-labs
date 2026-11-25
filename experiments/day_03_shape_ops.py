@@ -9,7 +9,8 @@ Goal:
 
 Acceptance:
     1. Transform synthetic [84, 84, 3] image to [3, 84, 84] (HWC -> CHW) using permute.
-    2. Demonstrate that permute changes stride and leaves tensor non-contiguous (.is_contiguous() == False).
+    2. Demonstrate that permute changes stride and leaves the tensor non-contiguous
+       (.is_contiguous() == False).
     3. Prove that .view(-1) -- a full flatten -- raises RuntimeError on the permuted tensor, while
        .view(3, -1), .contiguous().view(-1) and .reshape(-1) succeed. Note that view() only merges
        adjacent dims with compatible strides; it does NOT require strict contiguity.
@@ -20,8 +21,8 @@ Related concepts:
     T04 (shape ops: view/reshape/permute/contiguous)
 
 Hub position:
-    Hub (1) Tensor. Shape operations are the spatial bridge between storage layouts (NumPy/OpenCV HWC)
-    and PyTorch Conv2d expectations (NCHW).
+    Hub (1) Tensor. Shape operations are the spatial bridge between storage layouts
+    (NumPy/OpenCV HWC) and PyTorch Conv2d expectations (NCHW).
 
 Constraints:
     - Headless: no cv2.imshow / waitKey / createTrackbar / setMouseCallback
@@ -66,7 +67,8 @@ def permute_hwc_to_chw(img_hwc: torch.Tensor) -> torch.Tensor:
     img_chw = img_hwc.permute(2, 0, 1)
     # --- [TODO: Student Implementation End] ---
 
-    assert img_chw.shape == (3, img_hwc.shape[0], img_hwc.shape[1]), f"Expected CHW, got {img_chw.shape}"
+    expected_shape = (3, img_hwc.shape[0], img_hwc.shape[1])
+    assert img_chw.shape == expected_shape, f"Expected CHW, got {img_chw.shape}"
     return img_chw
 
 
@@ -95,7 +97,9 @@ def investigate_contiguity_and_view(img_hwc: torch.Tensor) -> None:
         raise ValueError("view(-1) should raise RuntimeError on non-contiguous tensor")
     permuted_flat = permuted.contiguous().view(-1)
     permuted_reshaped = permuted.reshape(-1)
-    assert torch.equal(permuted_flat, permuted_reshaped), "contiguous().view(-1) and reshape(-1) disagree"
+    assert torch.equal(permuted_flat, permuted_reshaped), (
+        "contiguous().view(-1) and reshape(-1) disagree"
+    )
 
     # --- [TODO: Student Implementation End] ---
 
@@ -121,8 +125,9 @@ def save_axis_order_counterexample(img_hwc: torch.Tensor, save_path: Path) -> No
     correct_back = correct_chw.permute(1, 2, 0).numpy()
     disastrous_back = disastrous_chw.permute(1, 2, 0).numpy()
 
-    assert np.array_equal(correct_back, img_hwc.numpy()), "permute round-trip must reproduce the original pixels"
-    assert not np.array_equal(disastrous_back, img_hwc.numpy()), "reshape must not reproduce the original pixels"
+    original = img_hwc.numpy()
+    assert np.array_equal(correct_back, original), "permute must reproduce the source pixels"
+    assert not np.array_equal(disastrous_back, original), "reshape must not reproduce the source"
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 5))
     axes[0].imshow(correct_back)
@@ -144,7 +149,10 @@ def main() -> None:
 
     # Setup
     img_hwc = generate_synthetic_image(84, 84)
-    print(f"  [Setup] Created synthetic pattern: shape={img_hwc.shape}, contiguous={img_hwc.is_contiguous()}")
+    print(
+        f"  [Setup] Created synthetic pattern: shape={img_hwc.shape}, "
+        f"contiguous={img_hwc.is_contiguous()}"
+    )
 
     # Step 1: Permute HWC -> CHW
     img_chw = permute_hwc_to_chw(img_hwc)
