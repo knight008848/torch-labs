@@ -125,22 +125,23 @@ headless 探针的 FAIL 只 print 未计入 `failures`。**两个都在「正向
 
 ---
 
-## 5. 脚手架已知缺陷（待修，非阻塞学习）
+## 5. 脚手架已知缺陷（待修）
 
 2026-11-19 静态分析定位；2026-11-25 Day 3 实跑时补充 1 条（P0，已修）。
-**均不阻塞学习**，但会在对应那天变成理解障碍。
+P0 会直接给出**错误的契约或错误的验收标准**，须优先处理；P1/P2 不阻塞学习，
+但会在对应那天变成理解障碍。
 
 | 级别 | 位置 | 问题 |
 |:---|:---|:---|
 | **P0** | `AGENTS.md` 禁止事项 7 vs `src/embodied_dataset.py` v0.1 TODO | 前者禁止「在 `__init__` 实例化 `h5py.File`」，后者要求「`__init__` 中开→立即关」。技术正解是禁止**跨 fork 持有**句柄，不是禁止打开。需同步改 `knowledge_graph.md` 的 Day 21 复述题 |
 | **P0** | `dataset_spec.md` / `00_LEARNING_PLAN.md` / `src` docstring / `day_20` | 多模态轴序无单一真源：spec 为 `[N,84,84,3]`，plan 为 `[B,3,84,84]`，另两处写 "or"。`torch.stack` 不看轴序，两种都能过，**契约实际失效** |
+| **P0** | `day_03_shape_ops.py` 验收 3（**已修** 2026-11-25） | 原文断言 `permuted.view(3, -1)` 会抛 `RuntimeError`，**实测不抛**，返回 `(3, 7056)` / stride `(1, 3)`。`view` 只合并 stride 兼容的相邻维，**不要求严格连续**；真正会抛的是 `view(-1)` 全展平、`view(84*84, 3)`、`view(84, -1)` |
 | P1 | `day_11_dataset_contract.py` | parity 断言在 `shuffle=True` 下语义不成立（batch 第 0 个不是 `dataset[0]`）；形状断言对任何样本都成立，是空洞检查。应改 `shuffle=False` 且比值 |
 | P1 | `day_11` / `day_20` TODO | 直接给出答案（`{'dropped_total': 8}`、完整 `torch.stack` 写法），违反禁止事项 1「只给提示」 |
 | P1 | 所有 `day_NN` 的 `main()` | 末尾硬编码 `>>> Day XX Acceptance: ALL PASS`；`day_15` 数据缺失时只 print 警告后 `return`（退出码 0）。后 27 天 assert 密度远低于 Day 1，「失败的运行必须响」名存实亡 |
 | P2 | `docs/domain_map.md` | 缺 B 类编号表（B01-B05 只定义在 `knowledge_graph.md`）；M3 说 Day 13 交付 v0.1 但逐日表是 Day 12，M5 说 Day 24 交付 v0.5 但版本序列只到 v0.4 |
-| **P0** | `day_03_shape_ops.py` 验收 3（**已修** 2026-11-25） | 原文断言 `permuted.view(3, -1)` 会抛 `RuntimeError`，**实测不抛**，返回 `(3, 7056)` / stride `(1, 3)`。`view` 只合并 stride 兼容的相邻维，**不要求严格连续**；真正会抛的是 `view(-1)` 全展平、`view(84*84, 3)`、`view(84, -1)` |
 
-**P0-3 的来历**（2026-11-25，Day 3 实跑时发现）：不是静态分析查出来的，是代码跑不通才定位的。
+**新增那条 P0 的来历**（2026-11-25，Day 3 实跑时发现）：不是静态分析查出来的，是代码跑不通才定位的。
 按 docstring 写的 `else: raise` 在运行时抢先触发——**断言拒绝了教材的假设**。随后实测确定边界：
 
 | 调用（输入 stride `(1, 252, 3)`，非连续） | 结果 |
