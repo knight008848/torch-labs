@@ -1,5 +1,5 @@
 """
-Day 03 / 2026-09-13 / Shape operations: view, reshape, permute, and contiguity
+Day 03 / 2026-11-25 / Shape operations: view, reshape, permute, and contiguity
 Runtime: <fill in after completion>
 
 Goal:
@@ -10,8 +10,9 @@ Goal:
 Acceptance:
     1. Transform synthetic [84, 84, 3] image to [3, 84, 84] (HWC -> CHW) using permute.
     2. Demonstrate that permute changes stride and leaves tensor non-contiguous (.is_contiguous() == False).
-    3. Prove that .view() on a non-contiguous tensor raises RuntimeError, while .contiguous().view()
-       or .reshape() succeeds.
+    3. Prove that .view(-1) -- a full flatten -- raises RuntimeError on the permuted tensor, while
+       .view(3, -1), .contiguous().view(-1) and .reshape(-1) succeed. Note that view() only merges
+       adjacent dims with compatible strides; it does NOT require strict contiguity.
     4. Save a comparison figure to docs/figs/day_03_axis_disaster.png contrasting correct permute
        vs disastrous reshape(3, 84, 84).
 
@@ -62,7 +63,7 @@ def permute_hwc_to_chw(img_hwc: torch.Tensor) -> torch.Tensor:
         Hint: img_hwc.permute(2, 0, 1)
     """
     # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError("Step 1: Permute tensor from [H, W, C] to [C, H, W]")
+    img_chw = img_hwc.permute(2, 0, 1)
     # --- [TODO: Student Implementation End] ---
 
     assert img_chw.shape == (3, img_hwc.shape[0], img_hwc.shape[1]), f"Expected CHW, got {img_chw.shape}"
@@ -76,11 +77,22 @@ def investigate_contiguity_and_view(img_hwc: torch.Tensor) -> None:
         1. Assert img_hwc.is_contiguous() is True.
         2. Create permuted = img_hwc.permute(2, 0, 1).
         3. Assert permuted.is_contiguous() is False.
-        4. In a try/except RuntimeError block, attempt permuted.view(3, -1) and catch the error.
-        5. Verify that permuted.contiguous().view(3, -1) and permuted.reshape(3, -1) succeed.
+        4. In a try/except RuntimeError block, attempt permuted.view(-1) and catch the error.
+           (Careful: permuted.view(3, -1) SUCCEEDS here -- the C axis is the outermost stride-1
+           block, so flattening only the trailing H, W dims is legal.)
+        5. Verify that permuted.contiguous().view(-1) and permuted.reshape(-1) succeed.
     """
     # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError("Step 2 & 3: Investigate contiguity and catch view RuntimeError on non-contiguous tensor")
+    assert img_hwc.is_contiguous(), "Input tensor must be contiguous"
+    permuted = img_hwc.permute(2, 0, 1)
+    assert not permuted.is_contiguous(), "Permuted tensor must be non-contiguous"
+    try:
+        permuted.view(3, -1)
+    except RuntimeError:
+        pass
+    else:
+        raise ValueError("view(3, -1) should raise RuntimeError on non-contiguous tensor")
+    assert permuted.contiguous().view(3, -1) == permuted.reshape(3, -1), "view(3, -1) or reshape(3, -1) should work on contiguous tensor"
     # --- [TODO: Student Implementation End] ---
 
 
@@ -98,7 +110,20 @@ def save_axis_order_counterexample(img_hwc: torch.Tensor, save_path: Path) -> No
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
     # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError("Step 4: Generate side-by-side plot of correct permute vs disastrous reshape")
+    correct_chw = img_hwc.permute(2, 0, 1)
+    disastrous_chw = img_hwc.reshape(3, 84, 84)
+    correct_back = correct_chw.permute(1, 2, 0).numpy()
+    disastrous_back = disastrous_chw.permute(1, 2, 0).numpy()
+    plt.subplots(1, 2, figsize=(10, 5))
+    plt.imshow(correct_back)
+    plt.title("Correct Permute")
+    plt.axis("off")
+    plt.imshow(disastrous_back)
+    plt.title("Disastrous Reshape")
+    plt.axis("off")
+    plt.savefig(save_path)
+    plt.axis("off")
+    plt.show()
     # --- [TODO: Student Implementation End] ---
 
     assert save_path.exists(), f"Figure file not found at {save_path}"
