@@ -87,12 +87,16 @@ def investigate_contiguity_and_view(img_hwc: torch.Tensor) -> None:
     permuted = img_hwc.permute(2, 0, 1)
     assert not permuted.is_contiguous(), "Permuted tensor must be non-contiguous"
     try:
-        permuted.view(3, -1)
-    except RuntimeError:
-        pass
+        permuted.view(-1)
+    except RuntimeError as e:
+        assert "view size is not compatible" in str(e), f"unexpected error: {e}"
+        print(f"  [Step 2 & 3] caught: {str(e).splitlines()[0]}")
     else:
-        raise ValueError("view(3, -1) should raise RuntimeError on non-contiguous tensor")
-    assert permuted.contiguous().view(3, -1) == permuted.reshape(3, -1), "view(3, -1) or reshape(3, -1) should work on contiguous tensor"
+        raise ValueError("view(-1) should raise RuntimeError on non-contiguous tensor")
+    permuted_flat = permuted.contiguous().view(-1)
+    permuted_reshaped = permuted.reshape(-1)
+    assert torch.equal(permuted_flat, permuted_reshaped), "contiguous().view(-1) and reshape(-1) disagree"
+
     # --- [TODO: Student Implementation End] ---
 
 
@@ -110,20 +114,25 @@ def save_axis_order_counterexample(img_hwc: torch.Tensor, save_path: Path) -> No
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
     # --- [TODO: Student Implementation Start] ---
+    height, width, channels = img_hwc.shape
+
     correct_chw = img_hwc.permute(2, 0, 1)
-    disastrous_chw = img_hwc.reshape(3, 84, 84)
+    disastrous_chw = img_hwc.reshape(channels, height, width)
     correct_back = correct_chw.permute(1, 2, 0).numpy()
     disastrous_back = disastrous_chw.permute(1, 2, 0).numpy()
-    plt.subplots(1, 2, figsize=(10, 5))
-    plt.imshow(correct_back)
-    plt.title("Correct Permute")
-    plt.axis("off")
-    plt.imshow(disastrous_back)
-    plt.title("Disastrous Reshape")
-    plt.axis("off")
-    plt.savefig(save_path)
-    plt.axis("off")
-    plt.show()
+
+    assert np.array_equal(correct_back, img_hwc.numpy()), "permute round-trip must reproduce the original pixels"
+    assert not np.array_equal(disastrous_back, img_hwc.numpy()), "reshape must not reproduce the original pixels"
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    axes[0].imshow(correct_back)
+    axes[0].set_title("permute(2, 0, 1): correct HWC to CHW")
+    axes[0].axis("off")
+    axes[1].imshow(disastrous_back)
+    axes[1].set_title(f"reshape({channels}, {height}, {width}): axis order destroyed")
+    axes[1].axis("off")
+    fig.savefig(save_path)
+    plt.close(fig)
     # --- [TODO: Student Implementation End] ---
 
     assert save_path.exists(), f"Figure file not found at {save_path}"
