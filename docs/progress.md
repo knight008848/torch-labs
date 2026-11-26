@@ -186,10 +186,11 @@
 **Day 4 增量（2026-11-26）**
 
 - 完成事项（Day 4）：`day_04_indexing.py` 五条验收全通，`exit=0`。
-  `main()` 自身 **0.03 s**；wall 3.6–13 s，几乎全花在 `import torch` 上（单独测 3.3–7.8 s，
-  随页面缓存波动）。所以文件头记的是「main / wall」两个数，而不是一个会漂的总时间——
-  单记一个「3.1 s」在冷缓存下无法复现（实测最慢一次 12.95 s），那是**测法不可重复**，
-  不是脚本变慢。`day_03`、`day_04` **两个文件**的 `ruff check` / `ruff format --check`
+  `main()` 自身 **0.02–0.03 s**；wall **2.5–13 s**（12 次连测多数落在 2.5–5.1 s，
+  最慢一次 12.95 s），几乎全花在 `import torch` 上（单独测 2.4–7.8 s，随页面缓存波动）。
+  所以文件头记的是「main / wall」两个数，而不是一个会漂的总时间——
+  单记一个「3.1 s」在冷缓存下无法复现，那是**测法不可重复**，不是脚本变慢。
+  `day_03`、`day_04` **两个文件**的 `ruff check` / `ruff format --check`
   全绿；全仓库仍有 344 处（162 `E501` + 122 `F821` 未写天的 TODO + 42 `F401` 等），
   不在本次范围。耗时约 1 h（未逐次计时，按 Day 2/3 同口径估）
   - Step 1 `traj[10:50:2]` → `(20, 7)`；`len(range(10,50,2)) = 20`，独立核对逐行相等
@@ -203,8 +204,12 @@
     `expected_rows` 与 `mask` 是同一表达式，属同义反复，抓不到「掩膜建错了列/改错了算子」；
     新写法在故意用错列时给出 `64 ≠ 187` 并当场 `raise`（已双向验证）；
     ② `[7] @ [7,7]` 合法、`torch.cat` 拒绝这组陈述，从「docstring 里的说法」变成**真的跑一遍**
-    （`assert` 消息 + `except` 里取 `str(e)`）；③ loader 的 schema 检查由 `assert` 改 `raise`，
+    （比对 `str(e)` 的关键词，不符就 `raise`）；③ loader 的 schema 检查由 `assert` 改 `raise`，
     因为 `python -O` 会把 `assert` 整条删掉，契约随之消失
+  - 复核第二轮再补两处：④ `reduced @ torch.zeros(...)` 的 `zeros` 默认 float32，
+    会让函数在 float64 输入上报 dtype 不匹配（改动前对 dtype 中立），已换
+    `reduced.new_zeros(...)`；⑤ `except` 里的 `assert "<消息>" in str(e)` 在 `-O` 下同样被删，
+    异常消息不符时会被静默放过——已一律改 `raise`，`day_03` 同一处也一并改了
 - 一条贯穿今天的实测（承 Day 3 的 stride）：
 
   | 表达式 | storage 同 | offset | stride | 视图/拷贝 |
