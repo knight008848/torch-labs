@@ -79,7 +79,10 @@ def investigate_contiguity_and_view(img_hwc: torch.Tensor) -> None:
     try:
         permuted.view(-1)
     except RuntimeError as e:
-        assert "view size is not compatible" in str(e), f"unexpected error: {e}"
+        # `raise`, not `assert`: assert is stripped under `python -O`, which would let
+        # a different RuntimeError be reported as the one we meant to catch.
+        if "view size is not compatible" not in str(e):
+            raise ValueError(f"unexpected error from view(-1): {e}") from e
         print(f"  [Step 2 & 3] caught: {str(e).splitlines()[0]}")
     else:
         raise ValueError("view(-1) should raise RuntimeError on non-contiguous tensor")
