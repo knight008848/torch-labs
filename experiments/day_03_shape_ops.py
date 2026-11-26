@@ -58,15 +58,8 @@ def generate_synthetic_image(height: int = 84, width: int = 84) -> torch.Tensor:
 
 
 def permute_hwc_to_chw(img_hwc: torch.Tensor) -> torch.Tensor:
-    """1. Permute image tensor from HWC to CHW.
-
-    TODO(Student):
-        Permute axes: dimension 0 (H), 1 (W), 2 (C) -> 2 (C), 0 (H), 1 (W).
-        Hint: img_hwc.permute(2, 0, 1)
-    """
-    # --- [TODO: Student Implementation Start] ---
+    """1. Permute image tensor from HWC to CHW."""
     img_chw = img_hwc.permute(2, 0, 1)
-    # --- [TODO: Student Implementation End] ---
 
     expected_shape = (img_hwc.shape[2], img_hwc.shape[0], img_hwc.shape[1])
     if img_chw.shape != expected_shape:
@@ -76,18 +69,7 @@ def permute_hwc_to_chw(img_hwc: torch.Tensor) -> torch.Tensor:
 
 
 def investigate_contiguity_and_view(img_hwc: torch.Tensor) -> None:
-    """2 & 3. Prove contiguity changes and demonstrate view vs reshape.
-
-    TODO(Student):
-        1. Assert img_hwc.is_contiguous() is True.
-        2. Create permuted = img_hwc.permute(2, 0, 1).
-        3. Assert permuted.is_contiguous() is False.
-        4. In a try/except RuntimeError block, attempt permuted.view(-1) and catch the error.
-        5. Prove the counterpart: permuted.view(3, -1) does NOT raise -- the C axis is the
-           outermost stride-1 block, so merging only H and W is legal. Check its stride.
-        6. Verify that permuted.contiguous().view(-1) and permuted.reshape(-1) succeed.
-    """
-    # --- [TODO: Student Implementation Start] ---
+    """2 & 3. Prove contiguity changes and demonstrate view vs reshape."""
     channels = img_hwc.shape[2]
     if channels < 2:
         raise ValueError("this demo needs C >= 2: with C == 1 the permute stays contiguous")
@@ -118,23 +100,11 @@ def investigate_contiguity_and_view(img_hwc: torch.Tensor) -> None:
         "contiguous().view(-1) and reshape(-1) disagree"
     )
 
-    # --- [TODO: Student Implementation End] ---
-
 
 def save_axis_order_counterexample(img_hwc: torch.Tensor, save_path: Path) -> None:
-    """4. Contrast correct permute vs catastrophic reshape, saving to docs/figs.
-
-    TODO(Student):
-        1. Create correct_chw using permute(2, 0, 1).
-        2. Create disastrous_chw using img_hwc.reshape(3, 84, 84).
-        3. Convert both back to HWC for matplotlib rendering:
-           - correct_back: correct_chw.permute(1, 2, 0).numpy()
-           - disastrous_back: disastrous_chw.permute(1, 2, 0).numpy()
-        4. Plot side by side with plt.subplots(1, 2) and save to save_path.
-    """
+    """4. Contrast correct permute vs catastrophic reshape, saving to docs/figs."""
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # --- [TODO: Student Implementation Start] ---
     height, width, channels = img_hwc.shape
 
     correct_chw = img_hwc.permute(2, 0, 1)
@@ -155,7 +125,6 @@ def save_axis_order_counterexample(img_hwc: torch.Tensor, save_path: Path) -> No
     axes[1].axis("off")
     fig.savefig(save_path)
     plt.close(fig)
-    # --- [TODO: Student Implementation End] ---
 
     assert save_path.exists(), f"Figure file not found at {save_path}"
 
