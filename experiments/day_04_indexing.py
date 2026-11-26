@@ -1,5 +1,5 @@
 """
-Day 04 / 2026-09-14 / Tensor indexing, slicing, and boolean masking
+Day 04 / 2026-11-26 / Tensor indexing, slicing, and boolean masking
 Runtime: <fill in after completion>
 
 Goal:
@@ -9,9 +9,11 @@ Goal:
 
 Acceptance:
     1. Slice a trajectory segment from joint position tensor [N, 7] using step intervals.
-    2. Apply boolean masking to filter all frames where joint index 0 exceeds a threshold (> 0.5 rad).
+    2. Apply boolean masking to filter all frames where joint index 0 exceeds a threshold
+       (> 0.5 rad).
     3. Contrast dimension-preserving slice [0:1, :] with rank-reducing index [0, :], asserting
-       shapes [1, 7] vs [7] and their downstream matrix multiplication implications.
+       shapes [1, 7] vs [7]. Note: [7] @ [7, 7] is legal (yields [7]); the rank-1 form breaks
+       torch.cat instead, which rejects mixing 1-D and 2-D tensors.
     4. Handle boundary condition: empty boolean mask returning an empty tensor of shape [0, 7].
     5. Exercise real trajectory data from data/raw/teleop_demo.hdf5 (demo_0/obs/robot0_joint_pos).
 
@@ -33,7 +35,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import h5py
-import numpy as np
 import torch
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -66,11 +67,15 @@ def slice_trajectory_subsegment(
     # --- [TODO: Student Implementation End] ---
 
     expected_len = len(range(start_idx, end_idx, step))
-    assert segment.shape == (expected_len, 7), f"Expected shape ({expected_len}, 7), got {segment.shape}"
+    expected_shape = (expected_len, trajectory.shape[1])
+    if segment.shape != expected_shape:
+        raise ValueError(f"Expected shape {expected_shape}, got {segment.shape}")
     return segment
 
 
-def boolean_mask_filtering(trajectory: torch.Tensor, joint_idx: int = 0, threshold: float = 0.5) -> torch.Tensor:
+def boolean_mask_filtering(
+    trajectory: torch.Tensor, joint_idx: int = 0, threshold: float = 0.5
+) -> torch.Tensor:
     """2. Filter frames where trajectory[:, joint_idx] > threshold.
 
     TODO(Student):
@@ -82,13 +87,18 @@ def boolean_mask_filtering(trajectory: torch.Tensor, joint_idx: int = 0, thresho
     raise NotImplementedError("Step 2: Filter trajectory using boolean mask")
     # --- [TODO: Student Implementation End] ---
 
-    assert filtered.ndim == 2 and filtered.shape[1] == 7
+    expected_rows = int((trajectory[:, joint_idx] > threshold).sum())
+    assert filtered.shape == (expected_rows, trajectory.shape[1]), (
+        f"Expected ({expected_rows}, {trajectory.shape[1]}), got {filtered.shape}"
+    )
     if filtered.numel() > 0:
         assert (filtered[:, joint_idx] > threshold).all()
     return filtered
 
 
-def contrast_rank_reduction_vs_preservation(trajectory: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+def contrast_rank_reduction_vs_preservation(
+    trajectory: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor]:
     """3. Contrast rank-reduction [7] with dimension preservation [1, 7].
 
     TODO(Student):
@@ -101,7 +111,9 @@ def contrast_rank_reduction_vs_preservation(trajectory: torch.Tensor) -> tuple[t
     # --- [TODO: Student Implementation End] ---
 
     assert reduced.shape == (7,) and reduced.ndim == 1, f"Expected [7], got {reduced.shape}"
-    assert preserved.shape == (1, 7) and preserved.ndim == 2, f"Expected [1, 7], got {preserved.shape}"
+    assert preserved.shape == (1, 7) and preserved.ndim == 2, (
+        f"Expected [1, 7], got {preserved.shape}"
+    )
     return reduced, preserved
 
 
@@ -113,7 +125,9 @@ def demonstrate_empty_mask_boundary(trajectory: torch.Tensor) -> torch.Tensor:
         Apply to trajectory and assert result has shape (0, 7) and is not None.
     """
     # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError("Step 4: Create all-False mask and assert empty slice has shape [0, 7]")
+    raise NotImplementedError(
+        "Step 4: Create all-False mask and assert empty slice has shape [0, 7]"
+    )
     # --- [TODO: Student Implementation End] ---
 
     assert empty_tensor.shape == (0, 7), f"Expected (0, 7), got {empty_tensor.shape}"
@@ -133,12 +147,18 @@ def main() -> None:
     print(f"  [Step 1] Sliced subsegment [10:50:2]: shape={sub.shape}")
 
     # Step 2: Boolean mask
-    filtered = boolean_mask_filtering(traj, joint_idx=0, threshold=0.0)
-    print(f"  [Step 2] Filtered frames where joint[0] > 0.0: matched {filtered.shape[0]} / {traj.shape[0]} frames")
+    threshold = 0.5
+    filtered = boolean_mask_filtering(traj, joint_idx=0, threshold=threshold)
+    print(
+        f"  [Step 2] Filtered frames where joint[0] > {threshold}: "
+        f"matched {filtered.shape[0]} / {traj.shape[0]} frames"
+    )
 
     # Step 3: Rank reduction vs dimension preservation
     reduced, preserved = contrast_rank_reduction_vs_preservation(traj)
-    print(f"  [Step 3] Preserved vs Reduced: [0:1, :] -> {preserved.shape}, [0, :] -> {reduced.shape}")
+    print(
+        f"  [Step 3] Preserved vs Reduced: [0:1, :] -> {preserved.shape}, [0, :] -> {reduced.shape}"
+    )
 
     # Step 4: Empty mask boundary condition
     empty = demonstrate_empty_mask_boundary(traj)
