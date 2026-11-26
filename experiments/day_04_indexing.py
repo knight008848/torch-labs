@@ -1,6 +1,6 @@
 """
 Day 04 / 2026-11-26 / Tensor indexing, slicing, and boolean masking
-Runtime: <fill in after completion>
+Runtime: 3.1 s
 
 Goal:
     Master standard slicing, advanced indexing, and boolean masking on trajectory
@@ -57,14 +57,8 @@ def load_joint_trajectory() -> torch.Tensor:
 def slice_trajectory_subsegment(
     trajectory: torch.Tensor, start_idx: int = 10, end_idx: int = 50, step: int = 2
 ) -> torch.Tensor:
-    """1. Slice trajectory segment from start_idx to end_idx with step.
-
-    TODO(Student):
-        Slice trajectory[start_idx:end_idx:step, :].
-    """
-    # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError("Step 1: Slice trajectory between start_idx and end_idx with step")
-    # --- [TODO: Student Implementation End] ---
+    """1. Slice trajectory segment from start_idx to end_idx with step."""
+    segment = trajectory[start_idx:end_idx:step, :]
 
     expected_len = len(range(start_idx, end_idx, step))
     expected_shape = (expected_len, trajectory.shape[1])
@@ -76,16 +70,9 @@ def slice_trajectory_subsegment(
 def boolean_mask_filtering(
     trajectory: torch.Tensor, joint_idx: int = 0, threshold: float = 0.5
 ) -> torch.Tensor:
-    """2. Filter frames where trajectory[:, joint_idx] > threshold.
-
-    TODO(Student):
-        1. Create boolean mask: mask = trajectory[:, joint_idx] > threshold
-        2. Filter frames: filtered = trajectory[mask]
-        3. Verify all elements in filtered[:, joint_idx] are strictly greater than threshold.
-    """
-    # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError("Step 2: Filter trajectory using boolean mask")
-    # --- [TODO: Student Implementation End] ---
+    """2. Filter frames where trajectory[:, joint_idx] > threshold."""
+    mask = trajectory[:, joint_idx] > threshold
+    filtered = trajectory[mask]
 
     expected_rows = int((trajectory[:, joint_idx] > threshold).sum())
     assert filtered.shape == (expected_rows, trajectory.shape[1]), (
@@ -99,16 +86,9 @@ def boolean_mask_filtering(
 def contrast_rank_reduction_vs_preservation(
     trajectory: torch.Tensor,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """3. Contrast rank-reduction [7] with dimension preservation [1, 7].
-
-    TODO(Student):
-        1. Extract reduced = trajectory[0, :] (shape: [7], ndim: 1)
-        2. Extract preserved = trajectory[0:1, :] (shape: [1, 7], ndim: 2)
-        3. Return (reduced, preserved)
-    """
-    # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError("Step 3: Extract reduced [7] and preserved [1, 7] tensors")
-    # --- [TODO: Student Implementation End] ---
+    """3. Contrast rank-reduction [7] with dimension preservation [1, 7]."""
+    reduced = trajectory[0, :]
+    preserved = trajectory[0:1, :]
 
     assert reduced.shape == (7,) and reduced.ndim == 1, f"Expected [7], got {reduced.shape}"
     assert preserved.shape == (1, 7) and preserved.ndim == 2, (
@@ -118,17 +98,9 @@ def contrast_rank_reduction_vs_preservation(
 
 
 def demonstrate_empty_mask_boundary(trajectory: torch.Tensor) -> torch.Tensor:
-    """4. Demonstrate boundary condition: all-False mask produces [0, 7] tensor.
-
-    TODO(Student):
-        Create a mask where no elements match (e.g. trajectory[:, 0] > 9999.0).
-        Apply to trajectory and assert result has shape (0, 7) and is not None.
-    """
-    # --- [TODO: Student Implementation Start] ---
-    raise NotImplementedError(
-        "Step 4: Create all-False mask and assert empty slice has shape [0, 7]"
-    )
-    # --- [TODO: Student Implementation End] ---
+    """4. Demonstrate boundary condition: all-False mask produces [0, 7] tensor."""
+    mask = trajectory[:, 0] > 9999.0
+    empty_tensor = trajectory[mask]
 
     assert empty_tensor.shape == (0, 7), f"Expected (0, 7), got {empty_tensor.shape}"
     return empty_tensor
