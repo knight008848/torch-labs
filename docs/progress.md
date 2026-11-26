@@ -185,14 +185,26 @@
 
 **Day 4 增量（2026-11-26）**
 
-- 完成事项（Day 4）：`day_04_indexing.py` 五条验收全通，`exit=0`，**3.1 s**，
-  `ruff check` / `ruff format --check` 全绿。耗时约 1 h（未逐次计时，按 Day 2/3 同口径估）
+- 完成事项（Day 4）：`day_04_indexing.py` 五条验收全通，`exit=0`。
+  `main()` 自身 **0.03 s**；wall 3.6–13 s，几乎全花在 `import torch` 上（单独测 3.3–7.8 s，
+  随页面缓存波动）。所以文件头记的是「main / wall」两个数，而不是一个会漂的总时间——
+  单记一个「3.1 s」在冷缓存下无法复现（实测最慢一次 12.95 s），那是**测法不可重复**，
+  不是脚本变慢。`day_03`、`day_04` **两个文件**的 `ruff check` / `ruff format --check`
+  全绿；全仓库仍有 344 处（162 `E501` + 122 `F821` 未写天的 TODO + 42 `F401` 等），
+  不在本次范围。耗时约 1 h（未逐次计时，按 Day 2/3 同口径估）
   - Step 1 `traj[10:50:2]` → `(20, 7)`；`len(range(10,50,2)) = 20`，独立核对逐行相等
-  - Step 2 掩膜 `joint[0] > 0.5` → **187 / 900** 帧；numpy 独立计数一致，源行号严格递增
-    （首命中在**第 15 行**，非第 0 行——所以「筛出表头」这类错误会被数据本身证伪）
+  - Step 2 掩膜 `joint[0] > 0.5` → **187 / 900** 帧（另用 numpy 独立计数核对同为 187）；
+    源行号严格递增（`torch.all(src[1:] > src[:-1])` 为真），首命中在**第 15 行**而非第 0 行
+    ——所以「筛出表头」这类错误会被数据本身证伪
   - Step 3 `[0:1, :]` → `(1, 7)` ndim 2；`[0, :]` → `(7,)` ndim 1
   - Step 4 全 False 掩膜 → `(0, 7)`、`numel=0`、dtype 仍 `float32`，且是**拷贝**
   - 全程用 `data/raw/teleop_demo.hdf5` 的 `data/demo_0/obs/robot0_joint_pos`（900×7）
+  - 复核（reviewer）后补的三处：① 掩膜行数改用**纯 Python 独立重算**——原来的
+    `expected_rows` 与 `mask` 是同一表达式，属同义反复，抓不到「掩膜建错了列/改错了算子」；
+    新写法在故意用错列时给出 `64 ≠ 187` 并当场 `raise`（已双向验证）；
+    ② `[7] @ [7,7]` 合法、`torch.cat` 拒绝这组陈述，从「docstring 里的说法」变成**真的跑一遍**
+    （`assert` 消息 + `except` 里取 `str(e)`）；③ loader 的 schema 检查由 `assert` 改 `raise`，
+    因为 `python -O` 会把 `assert` 整条删掉，契约随之消失
 - 一条贯穿今天的实测（承 Day 3 的 stride）：
 
   | 表达式 | storage 同 | offset | stride | 视图/拷贝 |
