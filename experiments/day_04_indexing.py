@@ -86,23 +86,31 @@ def boolean_mask_filtering(
 def contrast_rank_reduction_vs_preservation(
     trajectory: torch.Tensor,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """3. Contrast rank-reduction [7] with dimension preservation [1, 7]."""
+    """3. Contrast rank-reduction [D] with dimension preservation [1, D]."""
     reduced = trajectory[0, :]
     preserved = trajectory[0:1, :]
 
-    assert reduced.shape == (7,) and reduced.ndim == 1, f"Expected [7], got {reduced.shape}"
-    assert preserved.shape == (1, 7) and preserved.ndim == 2, (
-        f"Expected [1, 7], got {preserved.shape}"
+    n_joints = trajectory.shape[1]
+    assert reduced.shape == (n_joints,) and reduced.ndim == 1, (
+        f"Expected [{n_joints}], got {reduced.shape}"
+    )
+    assert preserved.shape == (1, n_joints) and preserved.ndim == 2, (
+        f"Expected [1, {n_joints}], got {preserved.shape}"
     )
     return reduced, preserved
 
 
 def demonstrate_empty_mask_boundary(trajectory: torch.Tensor) -> torch.Tensor:
-    """4. Demonstrate boundary condition: all-False mask produces [0, 7] tensor."""
-    mask = trajectory[:, 0] > 9999.0
+    """4. Demonstrate boundary condition: all-False mask produces [0, D] tensor."""
+    # Derive an impossible threshold instead of a magic number, so the mask is
+    # all-False for any trajectory rather than only for this one.
+    mask = trajectory[:, 0] > trajectory.max() + 1.0
     empty_tensor = trajectory[mask]
 
-    assert empty_tensor.shape == (0, 7), f"Expected (0, 7), got {empty_tensor.shape}"
+    n_joints = trajectory.shape[1]
+    assert empty_tensor.shape == (0, n_joints), (
+        f"Expected (0, {n_joints}), got {empty_tensor.shape}"
+    )
     return empty_tensor
 
 
