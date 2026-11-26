@@ -1,6 +1,6 @@
 """
 Day 04 / 2026-11-26 / Tensor indexing, slicing, and boolean masking
-Runtime: main() 0.03 s / wall 4-13 s (import torch dominates)
+Runtime: main() ~0.02 s / wall 2.5-13 s (import torch dominates)
 
 Goal:
     Master standard slicing, advanced indexing, and boolean masking on trajectory
@@ -80,9 +80,10 @@ def boolean_mask_filtering(
     filtered = trajectory[mask]
 
     # Independent anchor: recount the same predicate in pure Python, a different code
-    # path from the tensor mask. This catches a mask built from the wrong column or the
-    # wrong comparison operator. It cannot catch `threshold` itself holding the wrong
-    # value, because both counts share that argument -- that check lives in the caller.
+    # path from the tensor mask. This catches a mask built from the wrong column, or a
+    # comparison operator that changes the count (`<` gives 713 here). It cannot catch
+    # `threshold` itself holding the wrong value -- both counts share that argument --
+    # nor `>` vs `>=`, which agree on this data because no frame hits 0.5 exactly.
     manual_rows = sum(1 for row in trajectory.tolist() if row[joint_idx] > threshold)
     n_rows, n_cols = filtered.shape
     if n_rows != manual_rows:
@@ -110,14 +111,18 @@ def contrast_rank_reduction_vs_preservation(
 
     # The claim in the module docstring is that rank-1 breaks concatenation, not
     # multiplication -- so exercise both instead of only asserting shapes.
-    product = reduced @ torch.zeros((n_joints, n_joints))
+    # new_zeros keeps the dtype of `reduced`; a bare torch.zeros would force float32.
+    product = reduced @ reduced.new_zeros((n_joints, n_joints))
     assert product.shape == (n_joints,), (
         f"[{n_joints}] @ [{n_joints}, {n_joints}] gave {tuple(product.shape)}"
     )
     try:
         torch.cat([reduced, preserved], dim=0)
     except RuntimeError as e:
-        assert "same number of dimensions" in str(e), f"unexpected error: {e}"
+        # `raise`, not `assert`: assert is stripped under `python -O`, which would
+        # silently swallow a different RuntimeError raised here.
+        if "same number of dimensions" not in str(e):
+            raise ValueError(f"unexpected error from cat: {e}") from e
         print(f"  [Step 3] cat(1-D, 2-D) rejected: {str(e).splitlines()[0]}")
     else:
         raise ValueError("cat must reject mixing 1-D and 2-D tensors")
